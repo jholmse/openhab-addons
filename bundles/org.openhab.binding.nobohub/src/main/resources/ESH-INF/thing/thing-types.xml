@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="nobohub"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<!-- Sample Thing Type -->
+	<thing-type id="sample">
+		<label>NoboHub Binding Thing</label>
+		<description>Sample thing for NoboHub Binding</description>
+
+		<channels>
+			<channel id="serialNumber" typeId="serialNumber-channel-type" />
+			<channel id="name" typeId="name-channel-type" />
+			<channel id="activeOverrideId" typeId="activeOverrideId-channel-type" />
+			<channel id="softwareVersion" typeId="softwareVersion-channel-type" />
+			<channel id="hardwareVersion" typeId="hardwareVersion-channel-type" />
+			<channel id="productionDate" typeId="productionDate-channel-type" />
+		</channels>
+
+		<config-description>
+			<parameter name="serialNumber" type="text" required="true">
+				<label>Serial Number</label>
+				<description>Serial Number of the nobø hub (12 numbers, no spaces)</description>
+			</parameter>
+			<parameter name="hostName" type="text" required="true">
+				<label>Host Name</label>
+				<description>Host Name/IP address of the Nobø Hub</description>
+			</parameter>
+			<parameter name="keepaliveInterval" type="integer" required="false" min="5">
+				<label>Polling interval</label>
+				<description>Polling interval (seconds). Default: 14</description>
+				<default>14</default>
+			</parameter>
+		</config-description>
+
+	</thing-type>
+
+	<channel-type id="serialNumber-channel-type">
+		<item-type>String</item-type>
+		<label>Serial number</label>
+		<category>Serial number</category>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="name-channel-type">
+		<item-type>String</item-type>
+		<label>Name</label>
+		<category>Name</category>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="softwareVersion-channel-type">
+		<item-type>String</item-type>
+		<label>Software Version</label>
+		<category>Version</category>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="hardwareVersion-channel-type">
+		<item-type>String</item-type>
+		<label>Hardware Version</label>
+		<category>Version</category>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="productionDate-channel-type">
+		<item-type>String</item-type>
+		<label>Production Date</label>
+		<category>Production Date</category>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="activeOverrideId-channel-type">
+		<item-type>Number</item-type>
+		<label>Active Override Id</label>
+		<category>Override</category>
+		<state readOnly="false" />
+	</channel-type>
+
+</thing:thing-descriptions>
