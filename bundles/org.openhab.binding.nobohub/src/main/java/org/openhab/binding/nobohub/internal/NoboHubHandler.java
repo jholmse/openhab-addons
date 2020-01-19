@@ -23,6 +23,10 @@ import java.net.MulticastSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.validation.constraints.NotNull;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -35,6 +39,13 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
+import org.openhab.binding.nobohub.internal.connection.HubConnection;
+import org.openhab.binding.nobohub.model.Component;
+import org.openhab.binding.nobohub.model.Hub;
+import org.openhab.binding.nobohub.model.Override;
+import org.openhab.binding.nobohub.model.WeekProfile;
+import org.openhab.binding.nobohub.model.Zone;
+import org.openhab.binding.nobohub.model.NoboCommunicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,24 +61,26 @@ public class NoboHubHandler extends BaseThingHandler {
     private final Logger logger = LoggerFactory.getLogger(NoboHubHandler.class);
 
     private @Nullable NoboHubConfiguration config;
+    private @Nullable HubConnection connection;
 
-    private @Nullable Socket hubConnection;
-    private @Nullable PrintWriter out;
-    private @Nullable BufferedReader in;
+    private @NotNull Map<Integer, Override> overrideRegister = new HashMap<Integer, Override>();
+    private @NotNull Map<Integer, WeekProfile> weekProfileRegister = new HashMap<Integer, WeekProfile>();
+    private @NotNull Map<Integer, Zone> zoneRegister = new HashMap<Integer, Zone>();
+    private @NotNull Map<String, Component> componentRegister = new HashMap<String, Component>();
 
     public NoboHubHandler(Thing thing) {
         super(thing);
     }
 
-    @Override
+    @java.lang.Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         logger.info("NOBØ HUB: Handle command!");
         if (CHANNEL_ACTIVE_OVERRIDE_ID.equals(channelUID.getId())) {
             if (command instanceof RefreshType) {
                 try {
-                    refreshAll();
-                } catch (IOException ioex) {
-                    updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Failed to get status: " + ioex.getMessage());
+                    connection.refreshAll();
+                } catch (NoboCommunicationException noboEx) {
+                    updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Failed to get status: " + noboEx.getMessage());
                 }
             }
 
@@ -80,7 +93,7 @@ public class NoboHubHandler extends BaseThingHandler {
         }
     }
 
-    @Override
+    @java.lang.Override
     public void initialize() {
         config = getConfigAs(NoboHubConfiguration.class);
 
@@ -97,40 +110,14 @@ public class NoboHubHandler extends BaseThingHandler {
 
         // Background handshake:
         scheduler.execute(() -> {
-            boolean thingReachable = false;
-
             try {
-                connectSocket();
-
-                String hello = String.format("HELLO %s %s %s\r", NoboHubBindingConstants.API_VERSION, config.serialNumber, getDateString());
-                write(hello);
-                String helloRes = readLine();
-                if (null == helloRes || !helloRes.startsWith("HELLO"))
-                {
-                    if (helloRes.startsWith("REJECT"))
-                    {
-                        String reject[] = helloRes.split(" ", 2);
-                        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, String.format("Hub rejects us with reason %s", reject[1]));
-                    } else {
-                        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Hub rejects us");
-                    }
-                }
-
-                write("HANDSHAKE\r");
-                String handshakeRes = readLine();
-                if (null == handshakeRes || !helloRes.startsWith("HANDSHAKE"))
-                {
-                    updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Hub rejects us");
-                }
-
-                refreshAll();
-                thingReachable = true;
-
-            } catch (IOException ioex) {
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, ioex.getMessage());
+                connection = new HubConnection(config.hostName, config.serialNumber, this);
+                connection.connect();
+            } catch (NoboCommunicationException commEx) {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, commEx.getMessage());
             }
 
-            if (thingReachable) {
+            if (connection != null && connection.isConnected()) {
                 updateStatus(ThingStatus.ONLINE);
             } else {
                 updateStatus(ThingStatus.OFFLINE);
@@ -144,43 +131,9 @@ public class NoboHubHandler extends BaseThingHandler {
         // "Can not access device as username and/or password are invalid");
     }
 
-    private void refreshAll() throws IOException
+    public void receivedData(String line)
     {
-        write("G00\r");
-
-        String line = "";
-        while (!line.startsWith("H05"))
-        {
-            line = readLine();
-            parseLine(line);
-        }
-    }
-
-    private String readLine() throws IOException {
-        String line = in.readLine();
-        logger.info("NOBØ HUB: Read {}", line);
-        return line;
-    }
-
-    private void write(String s)
-    {
-        logger.info("NOBØ HUB: Sending {}", s);
-        out.write(s);
-        out.flush();
-    }
-
-    private void connectSocket() throws IOException
-    {
-        InetAddress host = InetAddress.getByName(config.hostName);
-        hubConnection = new Socket(host, NoboHubBindingConstants.NOBO_HUB_TCP_PORT);
-        out = new PrintWriter(hubConnection.getOutputStream(), true);
-        in = new BufferedReader(new InputStreamReader(hubConnection.getInputStream()));
-    }
-
-    private String getDateString()
-    {
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-        return format.format(new Date());
+        parseLine(line);
     }
 
     private void parseLine(String line)
@@ -189,22 +142,68 @@ public class NoboHubHandler extends BaseThingHandler {
             return;
         }
 
-        if (line.startsWith("H05"))
-        {
-            String parts[] = line.split(" ", 8);
-            String serialNumber = parts[1];
-            String name = parts[2];
-            String activeOverrideId = parts[4];
-            String softwareVersion = parts[5];
-            String hardwareVersion = parts[6];
-            String productionDate = parts[7];
+        if (line.startsWith("H01")) {
+            Zone zone = Zone.fromH01(line);
+            zoneRegister.put(zone.getId(), zone);
+        } else if (line.startsWith("H02")) {
+            Component component = Component.fromH02(line);
+            componentRegister.put(component.getSerialNumber(), component);
+        } else if (line.startsWith("H03")) {
+            WeekProfile weekProfile = WeekProfile.fromH03(line);
+            weekProfileRegister.put(weekProfile.getId(), weekProfile);
+        } else if (line.startsWith("H04")) {
+            Override override = Override.fromH04(line);
+            overrideRegister.put(override.getId(), override);
+        } else if (line.startsWith("H05")) {
+            Hub hub = Hub.fromH05(line);
 
-            updateState(NoboHubBindingConstants.CHANNEL_SERIAL_NUMBER, StringType.valueOf(serialNumber));
-            updateState(NoboHubBindingConstants.CHANNEL_NAME, StringType.valueOf(name));
-            updateState(NoboHubBindingConstants.CHANNEL_ACTIVE_OVERRIDE_ID, new DecimalType(Integer.parseInt(activeOverrideId)));
-            updateState(NoboHubBindingConstants.CHANNEL_SOFTWARE_VERSION, StringType.valueOf(softwareVersion));
-            updateState(NoboHubBindingConstants.CHANNEL_HARDWARE_VERSION, StringType.valueOf(hardwareVersion));
-            updateState(NoboHubBindingConstants.CHANNEL_PRODUCTION_DATE, StringType.valueOf(productionDate));
+            updateState(NoboHubBindingConstants.CHANNEL_SERIAL_NUMBER, StringType.valueOf(hub.getSerialNumver()));
+            updateState(NoboHubBindingConstants.CHANNEL_NAME, StringType.valueOf(hub.getName()));
+            updateState(NoboHubBindingConstants.CHANNEL_ACTIVE_OVERRIDE_ID, new DecimalType(Integer.parseInt(hub.getActiveOverrideId())));
+            updateState(NoboHubBindingConstants.CHANNEL_SOFTWARE_VERSION, StringType.valueOf(hub.getSoftwareVersion()));
+            updateState(NoboHubBindingConstants.CHANNEL_HARDWARE_VERSION, StringType.valueOf(hub.getHardwareVersion()));
+            updateState(NoboHubBindingConstants.CHANNEL_PRODUCTION_DATE, StringType.valueOf(hub.getProductionDate()));
+        } else if (line.startsWith("S00")) {
+            Zone zone = Zone.fromH01(line);
+            zoneRegister.remove(zone.getId());
+        } else if (line.startsWith("S01")) {
+            Component component = Component.fromH02(line);
+            componentRegister.remove(component.getSerialNumber());
+        } else if (line.startsWith("S02")) {
+            WeekProfile weekProfile = WeekProfile.fromH03(line);
+            weekProfileRegister.remove(weekProfile.getId());
+        } else if (line.startsWith("S03")) {
+            Override override = Override.fromH04(line);
+            overrideRegister.remove(override.getId());
+        } else if (line.startsWith("B00")) {
+            Zone zone = Zone.fromH01(line);
+            zoneRegister.put(zone.getId(), zone);
+        } else if (line.startsWith("B01")) {
+            Component component = Component.fromH02(line);
+            componentRegister.put(component.getSerialNumber(), component);
+        } else if (line.startsWith("B02")) {
+            WeekProfile weekProfile = WeekProfile.fromH03(line);
+            weekProfileRegister.put(weekProfile.getId(), weekProfile);
+        } else if (line.startsWith("B03")) {
+            Override override = Override.fromH04(line);
+            overrideRegister.put(override.getId(), override);
+        } else if (line.startsWith("V00")) {
+            Zone zone = Zone.fromH01(line);
+            zoneRegister.replace(zone.getId(), zone);
+        } else if (line.startsWith("V01")) {
+            Component component = Component.fromH02(line);
+            componentRegister.replace(component.getSerialNumber(), component);
+        } else if (line.startsWith("V02")) {
+            WeekProfile weekProfile = WeekProfile.fromH03(line);
+            weekProfileRegister.replace(weekProfile.getId(), weekProfile);
+        } else if (line.startsWith("V03")) {
+            Hub hub = Hub.fromH05(line);
+
+            updateState(NoboHubBindingConstants.CHANNEL_SERIAL_NUMBER, StringType.valueOf(hub.getSerialNumver()));
+            updateState(NoboHubBindingConstants.CHANNEL_NAME, StringType.valueOf(hub.getName()));
+            updateState(NoboHubBindingConstants.CHANNEL_ACTIVE_OVERRIDE_ID, new DecimalType(Integer.parseInt(hub.getActiveOverrideId())));
+            updateState(NoboHubBindingConstants.CHANNEL_SOFTWARE_VERSION, StringType.valueOf(hub.getSoftwareVersion()));
+            updateState(NoboHubBindingConstants.CHANNEL_HARDWARE_VERSION, StringType.valueOf(hub.getHardwareVersion()));
+            updateState(NoboHubBindingConstants.CHANNEL_PRODUCTION_DATE, StringType.valueOf(hub.getProductionDate()));
         }
-    }
 }

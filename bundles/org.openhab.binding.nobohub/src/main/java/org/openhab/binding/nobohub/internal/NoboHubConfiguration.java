@@ -12,24 +12,26 @@
  */
 package org.openhab.binding.nobohub.internal;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * The {@link NoboHubConfiguration} class contains fields mapping thing configuration parameters.
  *
  * @author Jørgen Austvik - Initial contribution
  */
-@NonNullByDefault
 public class NoboHubConfiguration {
 
     /**
      * Serial Number of Nobø Hub.
      */
+    @NonNull
     public String serialNumber;
 
     /**
      * Host address of Nobø Hub.
      */
+    @Nullable
     public String hostName;
 
     /**
