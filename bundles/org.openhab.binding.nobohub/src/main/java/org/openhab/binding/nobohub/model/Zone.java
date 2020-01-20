@@ -12,6 +12,14 @@
  */
 package org.openhab.binding.nobohub.model;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
+/**
+ * A Zone is a spece that contains one or more {@link Component}s.
+ * 
+ * @author Jørgen Austvik - Initial contribution
+ */
+@NonNullByDefault
 public final class Zone {
 
     private final int id;

@@ -12,17 +12,28 @@
  */
 package org.openhab.binding.nobohub.model;
 
+import java.time.LocalDateTime;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
+/**
+ * An override is when the normal weekly program is not followed because it
+ * is specified by pressing a switch or using an app.
+ * 
+ * @author Jørgen Austvik - Initial contribution
+ */
+@NonNullByDefault
 public final class Override {
 
     private final int id;
     private final OverrideMode mode;
     private final OverrideType type;
-    private final int startTime;
-    private final int endTime;
+    private final LocalDateTime startTime;
+    private final LocalDateTime endTime;
     private final OverrideTarget target;
     private final int targetId;
 
-    public Override(int id, OverrideMode mode, OverrideType type, int startTime, int endTime, OverrideTarget target, int targetId)
+    public Override(int id, OverrideMode mode, OverrideType type, LocalDateTime startTime, LocalDateTime endTime, OverrideTarget target, int targetId)
     {
         this.id = id;
         this.mode = mode;
@@ -44,8 +55,8 @@ public final class Override {
         return new Override(Integer.parseInt(parts[1]),
                             OverrideMode.getByNumber(Integer.parseInt(parts[2])),
                             OverrideType.getByNumber(Integer.parseInt(parts[3])),
-                            Integer.parseInt(parts[4]),
-                            Integer.parseInt(parts[5]),
+                            ModelHelper.toJavaDate(parts[4]),
+                            ModelHelper.toJavaDate(parts[5]),
                             OverrideTarget.getByNumber(Integer.parseInt(parts[6])),
                             Integer.parseInt(parts[7]));
     }
@@ -62,11 +73,11 @@ public final class Override {
         return type;
     }
 
-    public int startTime() {
+    public LocalDateTime startTime() {
         return startTime;
     }
 
-    public int endTime() {
+    public LocalDateTime endTime() {
         return endTime;
     }
 

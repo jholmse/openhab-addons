@@ -12,6 +12,19 @@
  */
 package org.openhab.binding.nobohub.model;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.nobohub.internal.NoboHubBindingConstants;
+
+/**
+ * Helper class for converting data to/from Nobø Hub.
+ * 
+ * @author Jørgen Austvik - Initial contribution
+ */
+@NonNullByDefault
 public final class ModelHelper {
 
     /**
@@ -23,6 +36,26 @@ public final class ModelHelper {
     static String toJavaString(final String noboString)
     {
         return noboString.replace((char) 160, ' ');
+    }
+
+    /**
+     * Creates a Java date string from a date string returned from the Nobø Hub.
+     * 
+     * @param noboDateString Date string from Nobø, like '202001221832' or '-1'
+     * @return Java date for the returned string (or null if -1 is returned)
+     */
+    @Nullable
+    static LocalDateTime toJavaDate(final String noboDateString) throws NoboDataException {
+        if ("-1".equals(noboDateString))
+        {
+            return null;
+        }
+
+        try {
+            return LocalDateTime.parse(noboDateString, NoboHubBindingConstants.DATE_FORMAT_MINUTES);
+        } catch (DateTimeParseException pe) {
+            throw new NoboDataException(String.format("Faild parsing string %s", noboDateString), pe);
+        }
     }
 
 }

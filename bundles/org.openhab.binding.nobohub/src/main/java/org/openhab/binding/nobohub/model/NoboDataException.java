@@ -12,6 +12,14 @@
  */
 package org.openhab.binding.nobohub.model;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
+/**
+ * Exception thrown when the data received from the hub has unexpected format.
+ * 
+ * @author Jørgen Austvik - Initial contribution
+ */
+@NonNullByDefault
 public class NoboDataException extends Exception {
 
     private static final long serialVersionUID = 1L;

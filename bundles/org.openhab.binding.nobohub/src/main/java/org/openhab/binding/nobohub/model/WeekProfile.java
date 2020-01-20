@@ -12,6 +12,14 @@
  */
 package org.openhab.binding.nobohub.model;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
+/**
+ * The normal week profile (used when no {@link Override}s exist).
+ * 
+ * @author Jørgen Austvik - Initial contribution
+ */
+@NonNullByDefault
 public final class WeekProfile {
 
     private final int id;

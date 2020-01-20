@@ -12,6 +12,14 @@
  */
 package org.openhab.binding.nobohub.model;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
+/**
+ * A Component in the Nobø Hub can be a Owen, a floor or a switch.
+ * 
+ * @author Jørgen Austvik - Initial contribution
+ */
+@NonNullByDefault
 public final class Component {
 
     private final String serialNumber;

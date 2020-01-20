@@ -12,6 +12,14 @@
  */
 package org.openhab.binding.nobohub.model;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
+/**
+ * Exception thrown when failing to communicate with the hub.
+ * 
+ * @author Jørgen Austvik - Initial contribution
+ */
+@NonNullByDefault
 public class NoboCommunicationException extends Exception {
 
     private static final long serialVersionUID = 1L;

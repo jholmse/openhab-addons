@@ -1,4 +1,4 @@
-    /**
+/**
  * Copyright (c) 2010-2020 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -12,6 +12,11 @@
  */
 package org.openhab.binding.nobohub.model;
 
+/**
+ * The type of the {@link Override}. How long does it last.
+ * 
+ * @author Jørgen Austvik - Initial contribution
+ */
 public enum OverrideType {
     
     NOW(0),

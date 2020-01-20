@@ -12,6 +12,11 @@
  */
 package org.openhab.binding.nobohub.model;
 
+/**
+ * The mode of the {@link Override}. What the value is overridden to.
+ * 
+ * @author Jørgen Austvik - Initial contribution
+ */
 public enum OverrideMode {
 
     NORMAL(0),

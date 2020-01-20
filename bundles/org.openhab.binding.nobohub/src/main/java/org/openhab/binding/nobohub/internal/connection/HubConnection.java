@@ -18,10 +18,12 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nobohub.internal.NoboHubBindingConstants;
 import org.openhab.binding.nobohub.internal.NoboHubHandler;
@@ -29,21 +31,26 @@ import org.openhab.binding.nobohub.model.NoboCommunicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Connection to the Nobø Hub (Socket wrapper).
+ * 
+ * @author Jørgen Austvik - Initial contribution
+ */
+@NonNullByDefault
 public class HubConnection {
 
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
-    private @NonNull final InetAddress host;
-    private @NonNull final NoboHubHandler hubHandler;
-    private @NonNull final String serialNumber;
+    private final InetAddress host;
+    private final NoboHubHandler hubHandler;
+    private final String serialNumber;
 
     private @Nullable Socket hubConnection;
     private @Nullable PrintWriter out;
     private @Nullable BufferedReader in;
 
 
-    public HubConnection(String hostName, String serialNumber, NoboHubHandler hubHandler) throws NoboCommunicationException
-    {
+    public HubConnection(String hostName, String serialNumber, NoboHubHandler hubHandler) throws NoboCommunicationException {
         try {
             host = InetAddress.getByName(hostName);
         } catch (IOException ioex) {
@@ -54,17 +61,14 @@ public class HubConnection {
         this.serialNumber = serialNumber;
     }
 
-    public boolean connect() throws NoboCommunicationException
-    {
+    public boolean connect() throws NoboCommunicationException {
         connectSocket();
 
         String hello = String.format("HELLO %s %s %s\r", NoboHubBindingConstants.API_VERSION, serialNumber, getDateString());
         write(hello);
         String helloRes = readLine();
-        if (null == helloRes || !helloRes.startsWith("HELLO"))
-        {
-            if (helloRes.startsWith("REJECT"))
-            {
+        if (null == helloRes || !helloRes.startsWith("HELLO")) {
+            if (helloRes.startsWith("REJECT")) {
                 String reject[] = helloRes.split(" ", 2);
                 throw new NoboCommunicationException(String.format("Hub rejects us with reason %s", reject[1]));
             } else {
@@ -74,8 +78,7 @@ public class HubConnection {
 
         write("HANDSHAKE\r");
         String handshakeRes = readLine();
-        if (null == handshakeRes || !handshakeRes.startsWith("HANDSHAKE"))
-        {
+        if (null == handshakeRes || !handshakeRes.startsWith("HANDSHAKE")) {
             throw new NoboCommunicationException(String.format("Hub rejects handshake"));
         }
 
@@ -83,69 +86,83 @@ public class HubConnection {
         return true;
     }
 
-    public void handshake() throws NoboCommunicationException
-    {
-        if (!isConnected())
-        {
+    public void handshake() throws NoboCommunicationException {
+        if (!isConnected()) {
             connect();
         } else {
             write("HANDSHAKE\r");
         }
     }
 
-    public void refreshAll() throws NoboCommunicationException
-    {
+    public void refreshAll() throws NoboCommunicationException {
         if (!isConnected()) {
             connect();
-        }
-        else
-        {
+        } else {
             refreshAllNoReconnect();
         }
     }
 
-    private void refreshAllNoReconnect() throws NoboCommunicationException
-    {
+    private void refreshAllNoReconnect() throws NoboCommunicationException {
         if (!isConnected()) {
             connect();
-        }
-        else
-        {
+        } else {
             write("G00\r");
 
             String line = "";
-            while (!line.startsWith("H05"))
-            {
+            while (!line.startsWith("H05")) {
                 line = readLine();
                 hubHandler.receivedData(line);
             }
         }
     }
 
-    public boolean isConnected()
-    {
+    public boolean isConnected() {
         return hubConnection != null && hubConnection.isConnected();
+    }
+
+    public void processReads(Duration timeout) throws NoboCommunicationException {
+        try {
+            if (null == hubConnection) {
+                throw new NoboCommunicationException("No connection to Hub");
+            }
+
+            logger.debug("Reading from Hub, waiting maximum {}", timeout);
+            hubConnection.setSoTimeout((int) timeout.toMillis());
+
+            try {
+                String line = readLine();
+                if (line.startsWith("HANDSHAKE")) {
+                    line = readLine();
+                }
+    
+                hubHandler.receivedData(line);
+            } catch (NoboCommunicationException nce) {
+                if (!(nce.getCause() instanceof SocketTimeoutException)) {
+                    connectSocket();
+                }
+            }
+        } catch (SocketException se) {
+            throw new NoboCommunicationException("Failed setting read timeout", se);
+        }
     }
 
     private String readLine() throws NoboCommunicationException {
         try {
             String line = in.readLine();
-            logger.info("NOBØ HUB: Read {}", line);
+            logger.debug("Reading '{}'", line);
             return line;    
         } catch (IOException ioex) {
             throw new NoboCommunicationException("Failed reading from Nobø Hub", ioex);
         }
     }
 
-    private void write(String s)
-    {
-        logger.info("NOBØ HUB: Sending {}", s);
+    private void write(String s) {
+        logger.debug("Sending '{}'", s);
         out.write(s);
         out.flush();
     }
 
-    private void connectSocket() throws NoboCommunicationException
-    {
+    private void connectSocket() throws NoboCommunicationException {
         try {
             hubConnection = new Socket(host, NoboHubBindingConstants.NOBO_HUB_TCP_PORT);
             out = new PrintWriter(hubConnection.getOutputStream(), true);
@@ -155,10 +172,17 @@ public class HubConnection {
         }
     }
 
-    private String getDateString()
-    {
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-        return format.format(new Date());
+    public void disconnect() throws NoboCommunicationException {
+        try {
+            out.close();
+            in.close();
+            hubConnection.close();
+        } catch (IOException ioex) {
+            throw new NoboCommunicationException("Error disconnecting from Hub", ioex);
+        }
     }
 
+    private String getDateString() {
+        return LocalDateTime.now().format(NoboHubBindingConstants.DATE_FORMAT_SECONDS);
+    }
 }

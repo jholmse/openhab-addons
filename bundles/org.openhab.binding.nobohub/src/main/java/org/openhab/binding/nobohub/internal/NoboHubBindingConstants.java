@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.nobohub.internal;
 
+import java.time.format.DateTimeFormatter;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 
@@ -28,7 +30,7 @@ public class NoboHubBindingConstants {
 
     public static final String API_VERSION = "1.1";
 
-    public static int NOBO_HUB_TCP_PORT = 27779;
+    public static final int NOBO_HUB_TCP_PORT = 27779;
 
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_SAMPLE = new ThingTypeUID(BINDING_ID, "sample");
@@ -41,4 +43,6 @@ public class NoboHubBindingConstants {
     public static final String CHANNEL_HARDWARE_VERSION = "hardwareVersion";
     public static final String CHANNEL_PRODUCTION_DATE = "productionDate";
 
+    public static final DateTimeFormatter DATE_FORMAT_SECONDS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    public static final DateTimeFormatter DATE_FORMAT_MINUTES = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 }

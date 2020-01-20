@@ -14,6 +14,7 @@ package org.openhab.binding.nobohub.internal;
 
 import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.*;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
+import org.openhab.binding.nobohub.internal.connection.HubCommunicationThread;
 import org.openhab.binding.nobohub.internal.connection.HubConnection;
 import org.openhab.binding.nobohub.model.Component;
 import org.openhab.binding.nobohub.model.Hub;
@@ -54,6 +56,7 @@ public class NoboHubHandler extends BaseThingHandler {
 
     private @Nullable NoboHubConfiguration config;
     private @Nullable HubConnection connection;
+    private @Nullable HubCommunicationThread hubThread;
 
     private @NotNull Map<Integer, Override> overrideRegister = new HashMap<Integer, Override>();
     private @NotNull Map<Integer, WeekProfile> weekProfileRegister = new HashMap<Integer, WeekProfile>();
@@ -108,6 +111,14 @@ public class NoboHubHandler extends BaseThingHandler {
             try {
                 connection = new HubConnection(config.hostName, config.serialNumber, this);
                 connection.connect();
+
+                Duration timeout = Duration.ofSeconds(14);
+                if (config.pollingInterval > 0) {
+                    timeout = Duration.ofSeconds(config.pollingInterval);
+                }
+
+                hubThread = new HubCommunicationThread(connection, timeout);
+                hubThread.start();
             } catch (NoboCommunicationException commEx) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, commEx.getMessage());
             }
@@ -126,6 +137,11 @@ public class NoboHubHandler extends BaseThingHandler {
         // "Can not access device as username and/or password are invalid");
     }
 
+    @java.lang.Override
+    public void dispose() {
+        hubThread.stopNow();
+    }
+
     public void receivedData(String line)
     {
         try {
@@ -134,6 +150,7 @@ public class NoboHubHandler extends BaseThingHandler {
             logger.error("Failed parsing line '{}': {}", line, nde.getMessage());
         }
     }
+
 
     private void parseLine(String line) throws NoboDataException
     {
@@ -208,12 +225,23 @@ public class NoboHubHandler extends BaseThingHandler {
             String parts[] = line.split(" ", 3);
             String serialNumber = parts[1];
             try {
+                if (parts[2] == null) {
+                    throw new NoboDataException("Missing temperature data");
+                }
+
                 double temp = Double.parseDouble(parts[2]);
                 componentRegister.get(serialNumber).setTemperature(temp);    
             } catch (NumberFormatException nfe) {
                 throw new NoboDataException(String.format("Failed to parse temperature %s: %s", parts[2], nfe.getMessage()), nfe);
-            } catch (NullPointerException npe) {
-                throw new NoboDataException("Missing temperature data", npe);
+            }
+        } else if (line.startsWith("E00")) {
+            logger.error("Error from Hub: {}", line);
+        } else {
+            // HANDSHAKE: Basic part of keepalive
+            // V06: Encryption key
+            // H00: contains no information
+            if (!line.startsWith("HANDSHAKE") && !line.startsWith("V06") && !line.startsWith("H00")) {
+                logger.info("Unknown information from Hub: '{}}'", line);
             }
         }
     }
