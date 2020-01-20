@@ -19,6 +19,7 @@ public final class Component {
     private final boolean reverse;
     private final int zoneId;
     private final int temperatureSensorForZoneComponentId;
+    private double temperature;
 
     public Component(String serialNumber, String name, boolean reverse, int zoneId, int temperatureSensorForZoneComponentId) {
         this.serialNumber = serialNumber;
@@ -60,5 +61,14 @@ public final class Component {
 
     public int getTemperatureSensorForZoneComponentId() {
         return temperatureSensorForZoneComponentId;
+    }
+
+    public double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(double temperature)
+    {
+        this.temperature = temperature;
     }
 }

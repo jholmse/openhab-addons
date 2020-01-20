@@ -14,15 +14,6 @@ package org.openhab.binding.nobohub.internal;
 
 import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.Socket;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,6 +37,7 @@ import org.openhab.binding.nobohub.model.Override;
 import org.openhab.binding.nobohub.model.WeekProfile;
 import org.openhab.binding.nobohub.model.Zone;
 import org.openhab.binding.nobohub.model.NoboCommunicationException;
+import org.openhab.binding.nobohub.model.NoboDataException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +70,10 @@ public class NoboHubHandler extends BaseThingHandler {
         if (CHANNEL_ACTIVE_OVERRIDE_ID.equals(channelUID.getId())) {
             if (command instanceof RefreshType) {
                 try {
-                    connection.refreshAll();
+                    if (connection != null)
+                    {
+                        connection.refreshAll();
+                    }
                 } catch (NoboCommunicationException noboEx) {
                     updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Failed to get status: " + noboEx.getMessage());
                 }
@@ -133,10 +128,14 @@ public class NoboHubHandler extends BaseThingHandler {
 
     public void receivedData(String line)
     {
-        parseLine(line);
+        try {
+            parseLine(line);
+        } catch (NoboDataException nde) {
+            logger.error("Failed parsing line '{}': {}", line, nde.getMessage());
+        }
     }
 
-    private void parseLine(String line)
+    private void parseLine(String line) throws NoboDataException
     {
         if (null == line) {
             return;
@@ -157,9 +156,9 @@ public class NoboHubHandler extends BaseThingHandler {
         } else if (line.startsWith("H05")) {
             Hub hub = Hub.fromH05(line);
 
-            updateState(NoboHubBindingConstants.CHANNEL_SERIAL_NUMBER, StringType.valueOf(hub.getSerialNumver()));
+            updateState(NoboHubBindingConstants.CHANNEL_SERIAL_NUMBER, StringType.valueOf(hub.getSerialNumber()));
             updateState(NoboHubBindingConstants.CHANNEL_NAME, StringType.valueOf(hub.getName()));
-            updateState(NoboHubBindingConstants.CHANNEL_ACTIVE_OVERRIDE_ID, new DecimalType(Integer.parseInt(hub.getActiveOverrideId())));
+            updateState(NoboHubBindingConstants.CHANNEL_ACTIVE_OVERRIDE_ID, new DecimalType(hub.getActiveOverrideId()));
             updateState(NoboHubBindingConstants.CHANNEL_SOFTWARE_VERSION, StringType.valueOf(hub.getSoftwareVersion()));
             updateState(NoboHubBindingConstants.CHANNEL_HARDWARE_VERSION, StringType.valueOf(hub.getHardwareVersion()));
             updateState(NoboHubBindingConstants.CHANNEL_PRODUCTION_DATE, StringType.valueOf(hub.getProductionDate()));
@@ -199,11 +198,23 @@ public class NoboHubHandler extends BaseThingHandler {
         } else if (line.startsWith("V03")) {
             Hub hub = Hub.fromH05(line);
 
-            updateState(NoboHubBindingConstants.CHANNEL_SERIAL_NUMBER, StringType.valueOf(hub.getSerialNumver()));
+            updateState(NoboHubBindingConstants.CHANNEL_SERIAL_NUMBER, StringType.valueOf(hub.getSerialNumber()));
             updateState(NoboHubBindingConstants.CHANNEL_NAME, StringType.valueOf(hub.getName()));
-            updateState(NoboHubBindingConstants.CHANNEL_ACTIVE_OVERRIDE_ID, new DecimalType(Integer.parseInt(hub.getActiveOverrideId())));
+            updateState(NoboHubBindingConstants.CHANNEL_ACTIVE_OVERRIDE_ID, new DecimalType(hub.getActiveOverrideId()));
             updateState(NoboHubBindingConstants.CHANNEL_SOFTWARE_VERSION, StringType.valueOf(hub.getSoftwareVersion()));
             updateState(NoboHubBindingConstants.CHANNEL_HARDWARE_VERSION, StringType.valueOf(hub.getHardwareVersion()));
             updateState(NoboHubBindingConstants.CHANNEL_PRODUCTION_DATE, StringType.valueOf(hub.getProductionDate()));
+        } else if (line.startsWith("Y02")) {
+            String parts[] = line.split(" ", 3);
+            String serialNumber = parts[1];
+            try {
+                double temp = Double.parseDouble(parts[2]);
+                componentRegister.get(serialNumber).setTemperature(temp);    
+            } catch (NumberFormatException nfe) {
+                throw new NoboDataException(String.format("Failed to parse temperature %s: %s", parts[2], nfe.getMessage()), nfe);
+            } catch (NullPointerException npe) {
+                throw new NoboDataException("Missing temperature data", npe);
+            }
         }
+    }
 }

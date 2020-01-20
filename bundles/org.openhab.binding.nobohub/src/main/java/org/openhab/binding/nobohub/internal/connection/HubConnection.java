@@ -74,7 +74,7 @@ public class HubConnection {
 
         write("HANDSHAKE\r");
         String handshakeRes = readLine();
-        if (null == handshakeRes || !helloRes.startsWith("HANDSHAKE"))
+        if (null == handshakeRes || !handshakeRes.startsWith("HANDSHAKE"))
         {
             throw new NoboCommunicationException(String.format("Hub rejects handshake"));
         }

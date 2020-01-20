@@ -12,7 +12,6 @@
  */
 package org.openhab.binding.nobohub.internal;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
@@ -25,7 +24,6 @@ public class NoboHubConfiguration {
     /**
      * Serial Number of Nobø Hub.
      */
-    @NonNull
     public String serialNumber;
 
     /**

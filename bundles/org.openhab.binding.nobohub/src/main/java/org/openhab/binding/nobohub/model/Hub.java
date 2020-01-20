@@ -14,22 +14,16 @@ package org.openhab.binding.nobohub.model;
 
 public class Hub {
 
-    @NonNull
     private final String serialNumber;
 
-    @NonNull
     private final String name;
 
-    @NonNull
     private final int activeOverrideId;
 
-    @NonNull
     private final String softwareVersion;
 
-    @NonNull
     private final String hardwareVersion;
 
-    @NonNull
     private final String productionDate;
 
     public Hub(String serialNumber, String name, int activeOverrideId, String softwareVersion, String hardwareVersion, String productionDate) {
@@ -41,7 +35,7 @@ public class Hub {
         this.productionDate = productionDate;
     }
 
-    public static Hub fromH05(String h05)
+    public static Hub fromH05(String h05) throws NoboDataException
     {
         String parts[] = h05.split(" ", 8);
 
@@ -54,36 +48,30 @@ public class Hub {
                        Integer.parseInt(parts[4]),
                        ModelHelper.toJavaString(parts[5]),
                        ModelHelper.toJavaString(parts[6]),
-                       ModelHelper.toJavaString(parts[7]);
+                       ModelHelper.toJavaString(parts[7]));
     }
 
-    @NonNull
-    private String getSerialNumber() {
+    public String getSerialNumber() {
         return serialNumber;
     }
 
-    @NonNull
-    private String getName() {
+    public String getName() {
         return name;
     }
 
-    @NonNull
-    private int getActiveOverrideId() {
+    public int getActiveOverrideId() {
         return activeOverrideId;
     }
     
-    @NonNull
-    private String getSoftwareVersion() {
+    public String getSoftwareVersion() {
         return softwareVersion;
     }
 
-    @NonNull
-    private String getHardwareVersion() {
+    public String getHardwareVersion() {
         return hardwareVersion;
     }
 
-    @NonNull
-    private String getProductionDate() {
+    public String getProductionDate() {
         return productionDate;
     }
 }

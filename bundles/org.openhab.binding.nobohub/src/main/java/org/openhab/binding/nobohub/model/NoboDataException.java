@@ -20,4 +20,8 @@ public class NoboDataException extends Exception {
         super(message);
     }
 
+    public NoboDataException(String message, Throwable parent) {
+        super(message, parent);
+    }
+
 }
