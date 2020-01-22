@@ -69,7 +69,7 @@ public class NoboHubHandler extends BaseThingHandler {
 
     @java.lang.Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        logger.info("NOBØ HUB: Handle command!");
+        logger.info("Handle command {} for channel {}!", command.toFullString(), channelUID);
         if (CHANNEL_ACTIVE_OVERRIDE_ID.equals(channelUID.getId())) {
             if (command instanceof RefreshType) {
                 try {
