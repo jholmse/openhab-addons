@@ -62,4 +62,8 @@ public class HubCommunicationThread extends Thread {
             logger.error("Error disconnecting from Hub", nce);
         }    
     }
+    
+    public HubConnection getConnection() {
+        return hubConnection;
+    }
 }

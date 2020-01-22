@@ -21,11 +21,12 @@ import org.eclipse.jdt.annotation.Nullable;
  * @author Jørgen Austvik - Initial contribution
  */
 @NonNullByDefault
-public class NoboHubConfiguration {
+public class NoboHubBridgeConfiguration {
 
     /**
      * Serial Number of Nobø Hub.
      */
+    @Nullable
     public String serialNumber;
 
     /**

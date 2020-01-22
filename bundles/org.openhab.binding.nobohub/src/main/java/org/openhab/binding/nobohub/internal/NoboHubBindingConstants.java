@@ -13,6 +13,9 @@
 package org.openhab.binding.nobohub.internal;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
@@ -33,7 +36,11 @@ public class NoboHubBindingConstants {
     public static final int NOBO_HUB_TCP_PORT = 27779;
 
     // List of all Thing Type UIDs
-    public static final ThingTypeUID THING_TYPE_SAMPLE = new ThingTypeUID(BINDING_ID, "sample");
+    public static final ThingTypeUID THING_TYPE_HUB = new ThingTypeUID(BINDING_ID, "nobohub");
+    public static final ThingTypeUID THING_TYPE_ZONE = new ThingTypeUID(BINDING_ID, "zone");
+
+    public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS
+        = new HashSet<ThingTypeUID>(Arrays.asList(THING_TYPE_HUB, THING_TYPE_ZONE));
 
     // List of all Channel ids
     public static final String CHANNEL_SERIAL_NUMBER = "serialNumber";

@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nobohub.internal.NoboHubBindingConstants;
-import org.openhab.binding.nobohub.internal.NoboHubHandler;
+import org.openhab.binding.nobohub.internal.NoboHubBridgeHandler;
 import org.openhab.binding.nobohub.model.NoboCommunicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,7 @@ public class HubConnection {
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
     private final InetAddress host;
-    private final NoboHubHandler hubHandler;
+    private final NoboHubBridgeHandler hubHandler;
     private final String serialNumber;
 
     private @Nullable Socket hubConnection;
@@ -50,7 +50,7 @@ public class HubConnection {
     private @Nullable BufferedReader in;
 
 
-    public HubConnection(String hostName, String serialNumber, NoboHubHandler hubHandler) throws NoboCommunicationException {
+    public HubConnection(String hostName, String serialNumber, NoboHubBridgeHandler hubHandler) throws NoboCommunicationException {
         try {
             host = InetAddress.getByName(hostName);
         } catch (IOException ioex) {
@@ -68,7 +68,7 @@ public class HubConnection {
         write(hello);
         String helloRes = readLine();
         if (null == helloRes || !helloRes.startsWith("HELLO")) {
-            if (helloRes.startsWith("REJECT")) {
+            if (helloRes != null && helloRes.startsWith("REJECT")) {
                 String reject[] = helloRes.split(" ", 2);
                 throw new NoboCommunicationException(String.format("Hub rejects us with reason %s", reject[1]));
             } else {
@@ -109,7 +109,7 @@ public class HubConnection {
             write("G00\r");
 
             String line = "";
-            while (!line.startsWith("H05")) {
+            while (line != null && !line.startsWith("H05")) {
                 line = readLine();
                 hubHandler.receivedData(line);
             }
@@ -131,7 +131,7 @@ public class HubConnection {
 
             try {
                 String line = readLine();
-                if (line.startsWith("HANDSHAKE")) {
+                if (line != null && line.startsWith("HANDSHAKE")) {
                     line = readLine();
                 }
     
@@ -146,7 +146,7 @@ public class HubConnection {
         }
     }
 
-    private String readLine() throws NoboCommunicationException {
+    private @Nullable String readLine() throws NoboCommunicationException {
         try {
             String line = in.readLine();
             logger.debug("Reading '{}'", line);
@@ -174,9 +174,17 @@ public class HubConnection {
 
     public void disconnect() throws NoboCommunicationException {
         try {
-            out.close();
-            in.close();
-            hubConnection.close();
+            if (out != null) {
+                out.close();
+            }
+
+            if (in != null) {
+                in.close();
+            }
+
+            if (hubConnection != null) {
+                hubConnection.close();
+            }
         } catch (IOException ioex) {
             throw new NoboCommunicationException("Error disconnecting from Hub", ioex);
         }

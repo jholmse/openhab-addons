@@ -24,11 +24,13 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.StringType;
+import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
-import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
+import org.eclipse.smarthome.core.thing.binding.BaseBridgeHandler;
+import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.openhab.binding.nobohub.internal.connection.HubCommunicationThread;
@@ -50,12 +52,11 @@ import org.slf4j.LoggerFactory;
  * @author Jørgen Austvik - Initial contribution
  */
 @NonNullByDefault
-public class NoboHubHandler extends BaseThingHandler {
+public class NoboHubBridgeHandler extends BaseBridgeHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(NoboHubHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(NoboHubBridgeHandler.class);
 
-    private @Nullable NoboHubConfiguration config;
-    private @Nullable HubConnection connection;
+    private @Nullable NoboHubBridgeConfiguration config;
     private @Nullable HubCommunicationThread hubThread;
 
     private @NotNull Map<Integer, Override> overrideRegister = new HashMap<Integer, Override>();
@@ -63,8 +64,8 @@ public class NoboHubHandler extends BaseThingHandler {
     private @NotNull Map<Integer, Zone> zoneRegister = new HashMap<Integer, Zone>();
     private @NotNull Map<String, Component> componentRegister = new HashMap<String, Component>();
 
-    public NoboHubHandler(Thing thing) {
-        super(thing);
+    public NoboHubBridgeHandler(Bridge bridge) {
+        super(bridge);
     }
 
     @java.lang.Override
@@ -73,9 +74,9 @@ public class NoboHubHandler extends BaseThingHandler {
         if (CHANNEL_ACTIVE_OVERRIDE_ID.equals(channelUID.getId())) {
             if (command instanceof RefreshType) {
                 try {
-                    if (connection != null)
+                    if (hubThread != null)
                     {
-                        connection.refreshAll();
+                        hubThread.getConnection().refreshAll();
                     }
                 } catch (NoboCommunicationException noboEx) {
                     updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Failed to get status: " + noboEx.getMessage());
@@ -93,15 +94,30 @@ public class NoboHubHandler extends BaseThingHandler {
 
     @java.lang.Override
     public void initialize() {
-        config = getConfigAs(NoboHubConfiguration.class);
+        config = getConfigAs(NoboHubBridgeConfiguration.class);
 
         if (null == config)
         {
-            logger.error("NOBØ HUB: Missing Configuration");
+            logger.error("Missing Configuration");
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "No configuration set");
-        } else {
-            logger.info("NOBØ HUB: Looking for HUB {} at {}", config.serialNumber, config.hostName);
+            return;
         }
+
+        String serialNumber = config.serialNumber;
+        if (null == serialNumber)
+        {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Missing serial number in configuration");
+            return;
+        }
+
+        String hostName = config.hostName;
+        if (null == hostName)
+        {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Missing host name in configuration");
+            return;
+        }
+
+        logger.info("Looking for Hub {} at {}", config.serialNumber, config.hostName);
 
         // Set the thing status to UNKNOWN temporarily and let the background task decide for the real status.
         updateStatus(ThingStatus.UNKNOWN);
@@ -109,24 +125,27 @@ public class NoboHubHandler extends BaseThingHandler {
         // Background handshake:
         scheduler.execute(() -> {
             try {
-                connection = new HubConnection(config.hostName, config.serialNumber, this);
-                connection.connect();
+
+
+                HubConnection conn = new HubConnection(hostName, serialNumber, this);
+                conn.connect();
 
                 Duration timeout = Duration.ofSeconds(14);
                 if (config.pollingInterval > 0) {
                     timeout = Duration.ofSeconds(config.pollingInterval);
                 }
 
-                hubThread = new HubCommunicationThread(connection, timeout);
+                hubThread = new HubCommunicationThread(conn, timeout);
                 hubThread.start();
+
+                if (hubThread.getConnection().isConnected()) {
+                    updateProperty("serialNumber", serialNumber);
+                    updateStatus(ThingStatus.ONLINE);
+                } else {
+                    updateStatus(ThingStatus.OFFLINE);
+                }
             } catch (NoboCommunicationException commEx) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, commEx.getMessage());
-            }
-
-            if (connection != null && connection.isConnected()) {
-                updateStatus(ThingStatus.ONLINE);
-            } else {
-                updateStatus(ThingStatus.OFFLINE);
             }
         });
 
@@ -141,8 +160,18 @@ public class NoboHubHandler extends BaseThingHandler {
     public void dispose() {
         hubThread.stopNow();
     }
+    
+    @java.lang.Override
+    public void childHandlerInitialized(ThingHandler handler, Thing thing) {
+        logger.info("Adding thing: {}", thing);
+    }
 
-    public void receivedData(String line)
+    @java.lang.Override
+    public void childHandlerDisposed(ThingHandler handler, Thing thing) {
+        logger.info("Disposing thing: {}", thing);
+    }
+
+    public void receivedData(@Nullable String line)
     {
         try {
             parseLine(line);
@@ -151,8 +180,7 @@ public class NoboHubHandler extends BaseThingHandler {
         }
     }
 
-
-    private void parseLine(String line) throws NoboDataException
+    private void parseLine(@Nullable String line) throws NoboDataException
     {
         if (null == line) {
             return;

@@ -4,10 +4,9 @@
 	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
-	<!-- Sample Thing Type -->
-	<thing-type id="sample">
-		<label>NoboHub Binding Thing</label>
-		<description>Sample thing for NoboHub Binding</description>
+	<bridge-type id="nobohub">
+		<label>Nobo Hub</label>
+		<description>Nobo Hub Bridge Binding</description>
 
 		<channels>
 			<channel id="serialNumber" typeId="serialNumber-channel-type" />
@@ -17,6 +16,11 @@
 			<channel id="hardwareVersion" typeId="hardwareVersion-channel-type" />
 			<channel id="productionDate" typeId="productionDate-channel-type" />
 		</channels>
+
+		<properties>
+			<property name="vendor">Glen Dimplex Nobo</property>
+		</properties>
+		<representation-property>serialNumber</representation-property>
 
 		<config-description>
 			<parameter name="serialNumber" type="text" required="true">
@@ -33,7 +37,20 @@
 				<default>14</default>
 			</parameter>
 		</config-description>
+	</bridge-type>
 
+	<thing-type id="zone">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="nobohub"/>
+		</supported-bridge-type-refs>
+
+		<label>Zone</label>
+		<description>A zone can contain several Nobo devices</description>
+
+		<properties>
+			<property name="vendor">Glen Dimplex Nobo</property>
+		</properties>
+		<representation-property>name</representation-property>
 	</thing-type>
 
 	<channel-type id="serialNumber-channel-type">

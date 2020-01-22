@@ -15,6 +15,7 @@ package org.openhab.binding.nobohub.model;
 import java.time.LocalDateTime;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * An override is when the normal weekly program is not followed because it
@@ -28,12 +29,12 @@ public final class Override {
     private final int id;
     private final OverrideMode mode;
     private final OverrideType type;
-    private final LocalDateTime startTime;
-    private final LocalDateTime endTime;
+    private final @Nullable LocalDateTime startTime;
+    private final @Nullable LocalDateTime endTime;
     private final OverrideTarget target;
     private final int targetId;
 
-    public Override(int id, OverrideMode mode, OverrideType type, LocalDateTime startTime, LocalDateTime endTime, OverrideTarget target, int targetId)
+    public Override(int id, OverrideMode mode, OverrideType type, @Nullable LocalDateTime startTime, @Nullable LocalDateTime endTime, OverrideTarget target, int targetId)
     {
         this.id = id;
         this.mode = mode;
@@ -73,10 +74,12 @@ public final class Override {
         return type;
     }
 
+    @Nullable
     public LocalDateTime startTime() {
         return startTime;
     }
 
+    @Nullable
     public LocalDateTime endTime() {
         return endTime;
     }

@@ -36,4 +36,17 @@ public class HubTest {
         assertEquals("11123610_rev._1", hub.getHardwareVersion());
         assertEquals("20190426", hub.getProductionDate());
     }
+
+    @Test
+    public void testParseV03() throws NoboDataException
+    {
+        Hub hub = Hub.fromH05("V03 102000092118 My Eco Hub 2880 14 114 11123610_rev._1 20190426");
+        assertEquals("102000092118", hub.getSerialNumber());
+        assertEquals("My Eco Hub", hub.getName());
+        assertEquals(14, hub.getActiveOverrideId());
+        assertEquals("114", hub.getSoftwareVersion());
+        assertEquals("11123610_rev._1", hub.getHardwareVersion());
+        assertEquals("20190426", hub.getProductionDate());
+    }
+
 }
