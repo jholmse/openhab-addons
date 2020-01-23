@@ -71,7 +71,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
     @java.lang.Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         logger.info("Handle command {} for channel {}!", command.toFullString(), channelUID);
-        if (CHANNEL_ACTIVE_OVERRIDE_ID.equals(channelUID.getId())) {
+        if (CHANNEL_HUB_ACTIVE_OVERRIDE_ID.equals(channelUID.getId())) {
             if (command instanceof RefreshType) {
                 try {
                     if (hubThread != null)
@@ -125,20 +125,23 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         // Background handshake:
         scheduler.execute(() -> {
             try {
-
-
                 HubConnection conn = new HubConnection(hostName, serialNumber, this);
                 conn.connect();
+
+                logger.debug("Done connecting to {} ({})", hostName, serialNumber);
 
                 Duration timeout = Duration.ofSeconds(14);
                 if (config.pollingInterval > 0) {
                     timeout = Duration.ofSeconds(config.pollingInterval);
                 }
 
+                logger.debug("Starting communication thread to {}", hostName);
+
                 hubThread = new HubCommunicationThread(conn, timeout);
                 hubThread.start();
 
                 if (hubThread.getConnection().isConnected()) {
+                    logger.debug("Communication thread to {} is up and running, we are online", hostName);
                     updateProperty("serialNumber", serialNumber);
                     updateStatus(ThingStatus.ONLINE);
                 } else {
@@ -201,12 +204,17 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         } else if (line.startsWith("H05")) {
             Hub hub = Hub.fromH05(line);
 
-            updateState(NoboHubBindingConstants.CHANNEL_SERIAL_NUMBER, StringType.valueOf(hub.getSerialNumber()));
-            updateState(NoboHubBindingConstants.CHANNEL_NAME, StringType.valueOf(hub.getName()));
-            updateState(NoboHubBindingConstants.CHANNEL_ACTIVE_OVERRIDE_ID, new DecimalType(hub.getActiveOverrideId()));
-            updateState(NoboHubBindingConstants.CHANNEL_SOFTWARE_VERSION, StringType.valueOf(hub.getSoftwareVersion()));
-            updateState(NoboHubBindingConstants.CHANNEL_HARDWARE_VERSION, StringType.valueOf(hub.getHardwareVersion()));
-            updateState(NoboHubBindingConstants.CHANNEL_PRODUCTION_DATE, StringType.valueOf(hub.getProductionDate()));
+            updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_ID, new DecimalType(hub.getActiveOverrideId()));
+            Override activeOverride = overrideRegister.get(hub.getActiveOverrideId());
+            if (activeOverride != null) {
+                updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME, StringType.valueOf(activeOverride.getMode().name()));
+            }
+
+            updateProperty("name", hub.getName());
+            updateProperty("serialNumber", hub.getSerialNumber());
+            updateProperty("softwareVersion", hub.getSoftwareVersion());
+            updateProperty("hardwareVersion", hub.getHardwareVersion());
+            updateProperty("productionDate", hub.getProductionDate());
         } else if (line.startsWith("S00")) {
             Zone zone = Zone.fromH01(line);
             zoneRegister.remove(zone.getId());
@@ -243,12 +251,17 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         } else if (line.startsWith("V03")) {
             Hub hub = Hub.fromH05(line);
 
-            updateState(NoboHubBindingConstants.CHANNEL_SERIAL_NUMBER, StringType.valueOf(hub.getSerialNumber()));
-            updateState(NoboHubBindingConstants.CHANNEL_NAME, StringType.valueOf(hub.getName()));
-            updateState(NoboHubBindingConstants.CHANNEL_ACTIVE_OVERRIDE_ID, new DecimalType(hub.getActiveOverrideId()));
-            updateState(NoboHubBindingConstants.CHANNEL_SOFTWARE_VERSION, StringType.valueOf(hub.getSoftwareVersion()));
-            updateState(NoboHubBindingConstants.CHANNEL_HARDWARE_VERSION, StringType.valueOf(hub.getHardwareVersion()));
-            updateState(NoboHubBindingConstants.CHANNEL_PRODUCTION_DATE, StringType.valueOf(hub.getProductionDate()));
+            updateProperty("name", hub.getName());
+            updateProperty("serialNumber", hub.getSerialNumber());
+            updateProperty("softwareVersion", hub.getSoftwareVersion());
+            updateProperty("hardwareVersion", hub.getHardwareVersion());
+            updateProperty("productionDate", hub.getProductionDate());
+            updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_ID, new DecimalType(hub.getActiveOverrideId()));
+
+            Override activeOverride = overrideRegister.get(hub.getActiveOverrideId());
+            if (activeOverride != null) {
+                updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME, StringType.valueOf(activeOverride.getMode().name()));
+            }
         } else if (line.startsWith("Y02")) {
             String parts[] = line.split(" ", 3);
             String serialNumber = parts[1];
@@ -272,5 +285,13 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
                 logger.info("Unknown information from Hub: '{}}'", line);
             }
         }
+    }
+
+    public @Nullable Zone getZone(Integer id) {
+        return zoneRegister.get(id);
+    }
+
+    public @Nullable WeekProfile getWeekProfile(Integer id) {
+        return weekProfileRegister.get(id);
     }
 }

@@ -45,6 +45,8 @@ public class NoboHubHandlerFactory extends BaseThingHandlerFactory {
 
         if (THING_TYPE_HUB.equals(thingTypeUID)) {
             return new NoboHubBridgeHandler((Bridge) thing);
+        } else if (THING_TYPE_ZONE.equals(thingTypeUID)) {
+            return new ZoneHandler(thing);
         }
 
         return null;

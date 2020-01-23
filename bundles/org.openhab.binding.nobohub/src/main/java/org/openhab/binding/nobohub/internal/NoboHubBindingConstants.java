@@ -43,12 +43,16 @@ public class NoboHubBindingConstants {
         = new HashSet<ThingTypeUID>(Arrays.asList(THING_TYPE_HUB, THING_TYPE_ZONE));
 
     // List of all Channel ids
-    public static final String CHANNEL_SERIAL_NUMBER = "serialNumber";
-    public static final String CHANNEL_NAME = "name";
-    public static final String CHANNEL_ACTIVE_OVERRIDE_ID = "activeOverrideId";
-    public static final String CHANNEL_SOFTWARE_VERSION = "softwareVersion";
-    public static final String CHANNEL_HARDWARE_VERSION = "hardwareVersion";
-    public static final String CHANNEL_PRODUCTION_DATE = "productionDate";
+
+    // Hub
+    public static final String CHANNEL_HUB_ACTIVE_OVERRIDE_ID = "activeOverrideId";
+    public static final String CHANNEL_HUB_ACTIVE_OVERRIDE_NAME = "activeOverrideName";
+
+    // Zone
+    public static final String CHANNEL_ZONE_WEEK_PROFILE_ID = "activeWeekProfileId";
+    public static final String CHANNEL_ZONE_WEEK_PROFILE_NAME = "activeWeekProfile";
+    public static final String CHANNEL_ZONE_COMFORT_TEMPERATURE = "comfortTemperature";
+    public static final String CHANNEL_ZONE_ECO_TEMPERATURE = "ecoTemperature";
 
     public static final DateTimeFormatter DATE_FORMAT_SECONDS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final DateTimeFormatter DATE_FORMAT_MINUTES = DateTimeFormatter.ofPattern("yyyyMMddHHmm");

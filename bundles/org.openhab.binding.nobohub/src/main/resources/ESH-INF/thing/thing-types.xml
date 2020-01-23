@@ -9,12 +9,8 @@
 		<description>Nobo Hub Bridge Binding</description>
 
 		<channels>
-			<channel id="serialNumber" typeId="serialNumber-channel-type" />
-			<channel id="name" typeId="name-channel-type" />
 			<channel id="activeOverrideId" typeId="activeOverrideId-channel-type" />
-			<channel id="softwareVersion" typeId="softwareVersion-channel-type" />
-			<channel id="hardwareVersion" typeId="hardwareVersion-channel-type" />
-			<channel id="productionDate" typeId="productionDate-channel-type" />
+			<channel id="activeOverrideName" typeId="activeOverrideName-channel-type" />
 		</channels>
 
 		<properties>
@@ -46,53 +42,60 @@
 
 		<label>Zone</label>
 		<description>A zone can contain several Nobo devices</description>
+	
+		<channels>
+			<channel id="activeWeekProfileId" typeId="activeWeekProfileId-channel-type" />
+			<channel id="activeWeekProfile" typeId="weekProfileName-channel-type" />
+			<channel id="comfortTemperature" typeId="temperature-channel-type" />
+			<channel id="ecoTemperature" typeId="temperature-channel-type" />
+		</channels>
 
 		<properties>
 			<property name="vendor">Glen Dimplex Nobo</property>
 		</properties>
 		<representation-property>name</representation-property>
+
+		<config-description>
+			<parameter name="id" type="integer" required="true">
+				<label>Id</label>
+				<description>Id of the Zone</description>
+			</parameter>
+		</config-description>
 	</thing-type>
-
-	<channel-type id="serialNumber-channel-type">
-		<item-type>String</item-type>
-		<label>Serial number</label>
-		<category>Serial number</category>
-		<state readOnly="true" />
-	</channel-type>
-
-	<channel-type id="name-channel-type">
-		<item-type>String</item-type>
-		<label>Name</label>
-		<category>Name</category>
-		<state readOnly="true" />
-	</channel-type>
-
-	<channel-type id="softwareVersion-channel-type">
-		<item-type>String</item-type>
-		<label>Software Version</label>
-		<category>Version</category>
-		<state readOnly="true" />
-	</channel-type>
-
-	<channel-type id="hardwareVersion-channel-type">
-		<item-type>String</item-type>
-		<label>Hardware Version</label>
-		<category>Version</category>
-		<state readOnly="true" />
-	</channel-type>
-
-	<channel-type id="productionDate-channel-type">
-		<item-type>String</item-type>
-		<label>Production Date</label>
-		<category>Production Date</category>
-		<state readOnly="true" />
-	</channel-type>
 
 	<channel-type id="activeOverrideId-channel-type">
 		<item-type>Number</item-type>
 		<label>Active Override Id</label>
 		<category>Override</category>
 		<state readOnly="false" />
+	</channel-type>
+
+	<channel-type id="activeOverrideName-channel-type">
+		<item-type>String</item-type>
+		<label>Active Override</label>
+		<category>Override</category>
+		<state readOnly="false" />
+	</channel-type>
+
+	<channel-type id="activeWeekProfileId-channel-type">
+		<item-type>Number</item-type>
+		<label>Active Week Profile Id</label>
+		<category>Week Profile</category>
+		<state readOnly="false" />
+	</channel-type>
+
+	<channel-type id="temperature-channel-type">
+		<item-type>Number</item-type>
+		<label>Temperature</label>
+		<category>Temperature</category>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="weekProfileName-channel-type">
+		<item-type>String</item-type>
+		<label>Week Profile</label>
+		<category>Week Profile</category>
+		<state readOnly="true" />
 	</channel-type>
 
 </thing:thing-descriptions>
