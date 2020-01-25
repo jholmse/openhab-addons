@@ -269,7 +269,8 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
                 Component component = componentRegister.get(serialNumber);
                 
                 if (component != null) {
-                    component.setTemperature(temp);            
+                    component.setTemperature(temp); 
+                    refreshComponent(component);           
                     int zoneId = component.getTemperatureSensorForZoneId();    
                     if (zoneId >= 0) {
                         Zone zone = zoneRegister.get(zoneId);
@@ -302,11 +303,28 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         return weekProfileRegister.get(id);
     }
 
+    public @Nullable Component getComponent(String serialNumber) {
+        return componentRegister.get(serialNumber);
+    }
+
     private void refreshZone(Zone zone) {
         this.getThing().getThings().forEach(thing -> {
-            ZoneHandler handler = (ZoneHandler) thing.getHandler();
-            if (handler != null && handler.getZoneId() == zone.getId()) {
-                handler.onUpdate(zone);
+            if (thing.getHandler() instanceof ZoneHandler) {
+                ZoneHandler handler = (ZoneHandler) thing.getHandler();
+                if (handler != null && handler.getZoneId() == zone.getId()) {
+                    handler.onUpdate(zone);
+                }    
+            }
+        });
+    }
+
+    private void refreshComponent(Component component) {
+        this.getThing().getThings().forEach(thing -> {
+            if (thing.getHandler() instanceof ComponentHandler) {
+                ComponentHandler handler = (ComponentHandler) thing.getHandler();
+                if (handler != null && component.getSerialNumber().equals(handler.getSerialNumber())) {
+                    handler.onUpdate(component);
+                }    
             }
         });
     }

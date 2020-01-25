@@ -38,9 +38,10 @@ public class NoboHubBindingConstants {
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_HUB = new ThingTypeUID(BINDING_ID, "nobohub");
     public static final ThingTypeUID THING_TYPE_ZONE = new ThingTypeUID(BINDING_ID, "zone");
+    public static final ThingTypeUID THING_TYPE_COMPONENT = new ThingTypeUID(BINDING_ID, "component");
 
     public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS
-        = new HashSet<ThingTypeUID>(Arrays.asList(THING_TYPE_HUB, THING_TYPE_ZONE));
+        = new HashSet<ThingTypeUID>(Arrays.asList(THING_TYPE_HUB, THING_TYPE_ZONE, THING_TYPE_COMPONENT));
 
     // List of all Channel ids
 
@@ -53,6 +54,10 @@ public class NoboHubBindingConstants {
     public static final String CHANNEL_ZONE_ECO_TEMPERATURE = "ecoTemperature";
     public static final String CHANNEL_ZONE_CURRENT_TEMPERATURE = "currentTemperature";
 
+    // Component
+    public static final String CHANNEL_COMPONENT_CURRENT_TEMPERATURE = "currentTemperature";
+
+    // Date/time
     public static final DateTimeFormatter DATE_FORMAT_SECONDS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final DateTimeFormatter DATE_FORMAT_MINUTES = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 }

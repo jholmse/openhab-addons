@@ -62,6 +62,31 @@
 		</config-description>
 	</thing-type>
 
+	<thing-type id="component">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="nobohub"/>
+		</supported-bridge-type-refs>
+
+		<label>Component</label>
+		<description>A component is an oven, a switch or a floor termostat</description>
+	
+		<channels>
+			<channel id="currentTemperature" typeId="temperature-channel-type" />
+		</channels>
+
+		<properties>
+			<property name="vendor">Glen Dimplex Nobo</property>
+		</properties>
+		<representation-property>serialNumber</representation-property>
+
+		<config-description>
+			<parameter name="serialNumber" type="text" required="true">
+				<label>Serial Number</label>
+				<description>Serial Number of the component (12 digits)</description>
+			</parameter>
+		</config-description>
+	</thing-type>
+
 	<channel-type id="activeOverrideName-channel-type">
 		<item-type>String</item-type>
 		<label>Active Override</label>

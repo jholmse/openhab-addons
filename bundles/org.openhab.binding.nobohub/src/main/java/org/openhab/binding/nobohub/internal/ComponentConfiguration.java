@@ -16,27 +16,16 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
- * The {@link NoboHubBridgeConfiguration} class contains fields mapping thing configuration parameters.
+ * The {@link ComponentConfiguration} class contains fields mapping thing configuration parameters.
  *
  * @author Jørgen Austvik - Initial contribution
  */
 @NonNullByDefault
-public class NoboHubBridgeConfiguration {
+public class ComponentConfiguration {
 
     /**
-     * Serial Number of Nobø Hub.
+     * Serial number of the component.
      */
     @Nullable
     public String serialNumber;
-
-    /**
-     * Host address of Nobø Hub.
-     */
-    @Nullable
-    public String hostName;
-
-    /**
-     * Polling interval (seconds)
-     */
-    public int pollingInterval;
 }

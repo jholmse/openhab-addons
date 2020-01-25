@@ -15,7 +15,7 @@ package org.openhab.binding.nobohub.internal;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * The {@link NoboHubConfiguration} class contains fields mapping thing configuration parameters.
+ * The {@link ZoneConfiguration} class contains fields mapping thing configuration parameters.
  *
  * @author Jørgen Austvik - Initial contribution
  */
