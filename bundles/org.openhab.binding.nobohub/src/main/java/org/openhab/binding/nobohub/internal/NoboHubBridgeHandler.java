@@ -34,6 +34,7 @@ import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.openhab.binding.nobohub.internal.connection.HubCommunicationThread;
 import org.openhab.binding.nobohub.internal.connection.HubConnection;
+import org.openhab.binding.nobohub.internal.discovery.NoboHubDiscoveryService;
 import org.openhab.binding.nobohub.model.Component;
 import org.openhab.binding.nobohub.model.Hub;
 import org.openhab.binding.nobohub.model.Override;
@@ -57,6 +58,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
 
     private @Nullable NoboHubBridgeConfiguration config;
     private @Nullable HubCommunicationThread hubThread;
+    private @Nullable NoboHubDiscoveryService discoveryService;
 
     private @NotNull Map<Integer, Override> overrideRegister = new HashMap<Integer, Override>();
     private @NotNull Map<Integer, WeekProfile> weekProfileRegister = new HashMap<Integer, WeekProfile>();
@@ -189,9 +191,11 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         if (line.startsWith("H01")) {
             Zone zone = Zone.fromH01(line);
             zoneRegister.put(zone.getId(), zone);
+            discoveryService.detectZones(zoneRegister.values());
         } else if (line.startsWith("H02")) {
             Component component = Component.fromH02(line);
             componentRegister.put(component.getSerialNumber(), component);
+            discoveryService.detectComponents(componentRegister.values());
         } else if (line.startsWith("H03")) {
             WeekProfile weekProfile = WeekProfile.fromH03(line);
             weekProfileRegister.put(weekProfile.getId(), weekProfile);
@@ -226,9 +230,11 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         } else if (line.startsWith("B00")) {
             Zone zone = Zone.fromH01(line);
             zoneRegister.put(zone.getId(), zone);
+            discoveryService.detectZones(zoneRegister.values());
         } else if (line.startsWith("B01")) {
             Component component = Component.fromH02(line);
             componentRegister.put(component.getSerialNumber(), component);
+            discoveryService.detectComponents(componentRegister.values());
         } else if (line.startsWith("B02")) {
             WeekProfile weekProfile = WeekProfile.fromH03(line);
             weekProfileRegister.put(weekProfile.getId(), weekProfile);
@@ -327,5 +333,20 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
                 }    
             }
         });
+    }
+
+    public void startScan() {
+        try {
+            if (hubThread != null)
+            {
+                hubThread.getConnection().refreshAll();
+            }
+        } catch (NoboCommunicationException noboEx) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Failed to get status: " + noboEx.getMessage());
+        }
+    }
+
+    public void setDicsoveryService(NoboHubDiscoveryService discoveryService) {
+        this.discoveryService = discoveryService;
     }
 }

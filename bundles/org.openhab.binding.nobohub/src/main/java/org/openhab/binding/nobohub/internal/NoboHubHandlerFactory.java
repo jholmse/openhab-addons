@@ -14,14 +14,22 @@ package org.openhab.binding.nobohub.internal;
 
 import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.*;
 
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.smarthome.config.discovery.DiscoveryService;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
+import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.openhab.binding.nobohub.internal.discovery.NoboHubDiscoveryService;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Component;
 
 /**
@@ -34,6 +42,8 @@ import org.osgi.service.component.annotations.Component;
 @Component(configurationPid = "binding.nobohub", service = ThingHandlerFactory.class)
 public class NoboHubHandlerFactory extends BaseThingHandlerFactory {
 
+    private final Map<ThingUID, ServiceRegistration<?>> discoveryServiceRegs = new HashMap<>();
+
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
         return SUPPORTED_THING_TYPES_UIDS.contains(thingTypeUID);
@@ -44,7 +54,9 @@ public class NoboHubHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (THING_TYPE_HUB.equals(thingTypeUID)) {
-            return new NoboHubBridgeHandler((Bridge) thing);
+            NoboHubBridgeHandler handler = new NoboHubBridgeHandler((Bridge) thing);
+            registerDiscoveryService(handler);
+            return handler;
         } else if (THING_TYPE_ZONE.equals(thingTypeUID)) {
             return new ZoneHandler(thing);
         } else if (THING_TYPE_COMPONENT.equals(thingTypeUID)) {
@@ -52,5 +64,31 @@ public class NoboHubHandlerFactory extends BaseThingHandlerFactory {
         }
 
         return null;
+    }
+
+    @Override
+    protected void removeHandler(ThingHandler thingHandler) {
+        if (thingHandler instanceof NoboHubBridgeHandler) {
+            unregisterDiscoveryService((NoboHubBridgeHandler) thingHandler);
+        }
+    }
+
+    private synchronized void registerDiscoveryService(NoboHubBridgeHandler bridgeHandler) {
+        NoboHubDiscoveryService discoveryService = new NoboHubDiscoveryService(bridgeHandler);
+        bridgeHandler.setDicsoveryService(discoveryService);
+        this.discoveryServiceRegs.put(bridgeHandler.getThing().getUID(), getBundleContext()
+                .registerService(DiscoveryService.class.getName(), discoveryService, new Hashtable<String, Object>()));
+    }
+
+    private synchronized void unregisterDiscoveryService(NoboHubBridgeHandler bridgeHandler) {
+        ServiceRegistration<?> serviceReg = this.discoveryServiceRegs.remove(bridgeHandler.getThing().getUID());
+        if (serviceReg != null) {
+            NoboHubDiscoveryService service = (NoboHubDiscoveryService) getBundleContext()
+                    .getService(serviceReg.getReference());
+            serviceReg.unregister();
+            if (service != null) {
+                service.deactivate();
+            }
+        }
     }
 }

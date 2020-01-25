@@ -32,6 +32,7 @@ public class NoboHubBindingConstants {
     private static final String BINDING_ID = "nobohub";
 
     public static final String API_VERSION = "1.1";
+    public static final String VENDOR = "Glen Dimplex Nobø";
 
     public static final int NOBO_HUB_TCP_PORT = 27779;
 
@@ -39,6 +40,9 @@ public class NoboHubBindingConstants {
     public static final ThingTypeUID THING_TYPE_HUB = new ThingTypeUID(BINDING_ID, "nobohub");
     public static final ThingTypeUID THING_TYPE_ZONE = new ThingTypeUID(BINDING_ID, "zone");
     public static final ThingTypeUID THING_TYPE_COMPONENT = new ThingTypeUID(BINDING_ID, "component");
+
+    public static final Set<ThingTypeUID> AUTODISCOVERED_THING_TYPES_UIDS
+        = new HashSet<ThingTypeUID>(Arrays.asList(THING_TYPE_ZONE, THING_TYPE_COMPONENT));
 
     public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS
         = new HashSet<ThingTypeUID>(Arrays.asList(THING_TYPE_HUB, THING_TYPE_ZONE, THING_TYPE_COMPONENT));
