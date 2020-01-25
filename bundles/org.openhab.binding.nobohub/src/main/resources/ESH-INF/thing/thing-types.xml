@@ -9,7 +9,6 @@
 		<description>Nobo Hub Bridge Binding</description>
 
 		<channels>
-			<channel id="activeOverrideId" typeId="activeOverrideId-channel-type" />
 			<channel id="activeOverrideName" typeId="activeOverrideName-channel-type" />
 		</channels>
 
@@ -44,10 +43,10 @@
 		<description>A zone can contain several Nobo devices</description>
 	
 		<channels>
-			<channel id="activeWeekProfileId" typeId="activeWeekProfileId-channel-type" />
 			<channel id="activeWeekProfile" typeId="weekProfileName-channel-type" />
-			<channel id="comfortTemperature" typeId="temperature-channel-type" />
-			<channel id="ecoTemperature" typeId="temperature-channel-type" />
+			<channel id="comfortTemperature" typeId="comfort-temperature-channel-type" />
+			<channel id="ecoTemperature" typeId="eco-temperature-channel-type" />
+			<channel id="currentTemperature" typeId="temperature-channel-type" />
 		</channels>
 
 		<properties>
@@ -63,31 +62,47 @@
 		</config-description>
 	</thing-type>
 
-	<channel-type id="activeOverrideId-channel-type">
-		<item-type>Number</item-type>
-		<label>Active Override Id</label>
-		<category>Override</category>
-		<state readOnly="false" />
-	</channel-type>
-
 	<channel-type id="activeOverrideName-channel-type">
 		<item-type>String</item-type>
 		<label>Active Override</label>
 		<category>Override</category>
-		<state readOnly="false" />
+		<state readOnly="false" >
+			<options>
+				<option value="NORMAL">Normal</option>
+				<option value="COMFORT">Comfort</option>
+				<option value="ECO">Eco</option>
+				<option value="Away">Away</option>
+			</options>
+		</state>
 	</channel-type>
 
-	<channel-type id="activeWeekProfileId-channel-type">
+	<channel-type id="eco-temperature-channel-type">
 		<item-type>Number</item-type>
-		<label>Active Week Profile Id</label>
-		<category>Week Profile</category>
-		<state readOnly="false" />
+		<label>Eco Temperature</label>
+		<category>Temperature</category>
+		<tags>
+			<tag>TargetTemperature</tag>
+		</tags>
+		<state min="7" max="30" readOnly="true" />
+	</channel-type>
+
+	<channel-type id="comfort-temperature-channel-type">
+		<item-type>Number</item-type>
+		<label>Comfort Temperature</label>
+		<category>Temperature</category>
+		<tags>
+			<tag>TargetTemperature</tag>
+		</tags>
+		<state min="7" max="30" readOnly="true" />
 	</channel-type>
 
 	<channel-type id="temperature-channel-type">
 		<item-type>Number</item-type>
-		<label>Temperature</label>
+		<label>Current Temperature</label>
 		<category>Temperature</category>
+		<tags>
+			<tag>CurrentTemperature</tag>
+		</tags>
 		<state readOnly="true" />
 	</channel-type>
 

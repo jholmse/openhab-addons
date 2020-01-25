@@ -48,15 +48,18 @@ public class ZoneHandler extends BaseThingHandler {
     }
 
     public void onUpdate(Zone zone) {
-
         updateStatus(ThingStatus.ONLINE);
 
-        DecimalType activeWeekProfile = new DecimalType(zone.getActiveWeekProfileId());
-        updateState(CHANNEL_ZONE_WEEK_PROFILE_ID, activeWeekProfile);
         DecimalType comfortTemperature = new DecimalType(zone.getComfortTemperature());
         updateState(CHANNEL_ZONE_COMFORT_TEMPERATURE, comfortTemperature);
         DecimalType ecoTemperature = new DecimalType(zone.getEcoTemperature());
         updateState(CHANNEL_ZONE_ECO_TEMPERATURE, ecoTemperature);
+
+        Double temp = zone.getTemperature();
+        if (temp != null) {
+            DecimalType currentTemperature = new DecimalType(temp);
+            updateState(CHANNEL_ZONE_CURRENT_TEMPERATURE, currentTemperature);
+        }
 
         updateProperty("name", zone.getName());
         updateProperty("id", Integer.toString(zone.getId()));
@@ -91,7 +94,7 @@ public class ZoneHandler extends BaseThingHandler {
                             updateState(CHANNEL_ZONE_WEEK_PROFILE_NAME, weekProfileValue);
                         }
                     }
-                }    
+                }
             } else {
                 updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.GONE);
                 logger.error("id not set for channel {}", channelUID);
@@ -101,5 +104,9 @@ public class ZoneHandler extends BaseThingHandler {
         }
 
         logger.debug("The sensor is a read-only device and cannot handle commands.");
+    }
+
+    public @Nullable Integer getZoneId() {
+        return id;
     }
 }

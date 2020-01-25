@@ -22,7 +22,6 @@ import javax.validation.constraints.NotNull;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
@@ -71,24 +70,22 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
     @java.lang.Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         logger.info("Handle command {} for channel {}!", command.toFullString(), channelUID);
-        if (CHANNEL_HUB_ACTIVE_OVERRIDE_ID.equals(channelUID.getId())) {
-            if (command instanceof RefreshType) {
-                try {
-                    if (hubThread != null)
-                    {
-                        hubThread.getConnection().refreshAll();
-                    }
-                } catch (NoboCommunicationException noboEx) {
-                    updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Failed to get status: " + noboEx.getMessage());
+
+        if (command instanceof RefreshType) {
+            try {
+                if (hubThread != null)
+                {
+                    hubThread.getConnection().refreshAll();
                 }
+            } catch (NoboCommunicationException noboEx) {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Failed to get status: " + noboEx.getMessage());
             }
 
-            // TODO: handle command
+            return;
+        }
 
-            // Note: if communication with thing fails for some reason,
-            // indicate that by setting the status with detail information:
-            // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-            // "Could not control device at IP address x.x.x.x");
+        if (CHANNEL_HUB_ACTIVE_OVERRIDE_NAME.equals(channelUID.getId())) {
+            logger.debug("TODO: Set override for hub {} to {}", channelUID, command);
         }
     }
 
@@ -204,7 +201,6 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         } else if (line.startsWith("H05")) {
             Hub hub = Hub.fromH05(line);
 
-            updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_ID, new DecimalType(hub.getActiveOverrideId()));
             Override activeOverride = overrideRegister.get(hub.getActiveOverrideId());
             if (activeOverride != null) {
                 updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME, StringType.valueOf(activeOverride.getMode().name()));
@@ -256,7 +252,6 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             updateProperty("softwareVersion", hub.getSoftwareVersion());
             updateProperty("hardwareVersion", hub.getHardwareVersion());
             updateProperty("productionDate", hub.getProductionDate());
-            updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_ID, new DecimalType(hub.getActiveOverrideId()));
 
             Override activeOverride = overrideRegister.get(hub.getActiveOverrideId());
             if (activeOverride != null) {
@@ -271,7 +266,19 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
                 }
 
                 double temp = Double.parseDouble(parts[2]);
-                componentRegister.get(serialNumber).setTemperature(temp);    
+                Component component = componentRegister.get(serialNumber);
+                
+                if (component != null) {
+                    component.setTemperature(temp);            
+                    int zoneId = component.getTemperatureSensorForZoneId();    
+                    if (zoneId >= 0) {
+                        Zone zone = zoneRegister.get(zoneId);
+                        if (zone != null) {
+                            zone.setTemperature(temp);
+                            refreshZone(zone);
+                        }
+                    }
+                }
             } catch (NumberFormatException nfe) {
                 throw new NoboDataException(String.format("Failed to parse temperature %s: %s", parts[2], nfe.getMessage()), nfe);
             }
@@ -293,5 +300,14 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
 
     public @Nullable WeekProfile getWeekProfile(Integer id) {
         return weekProfileRegister.get(id);
+    }
+
+    private void refreshZone(Zone zone) {
+        this.getThing().getThings().forEach(thing -> {
+            ZoneHandler handler = (ZoneHandler) thing.getHandler();
+            if (handler != null && handler.getZoneId() == zone.getId()) {
+                handler.onUpdate(zone);
+            }
+        });
     }
 }

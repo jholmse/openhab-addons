@@ -26,15 +26,15 @@ public final class Component {
     private final String name;
     private final boolean reverse;
     private final int zoneId;
-    private final int temperatureSensorForZoneComponentId;
+    private final int temperatureSensorForZoneId;
     private double temperature;
 
-    public Component(String serialNumber, String name, boolean reverse, int zoneId, int temperatureSensorForZoneComponentId) {
+    public Component(String serialNumber, String name, boolean reverse, int zoneId, int temperatureSensorForZoneId) {
         this.serialNumber = serialNumber;
         this.name = name;
         this.reverse = reverse;
         this.zoneId = zoneId;
-        this.temperatureSensorForZoneComponentId = temperatureSensorForZoneComponentId;
+        this.temperatureSensorForZoneId = temperatureSensorForZoneId;
     }
 
     public static Component fromH02(String h02) throws NoboDataException {
@@ -67,8 +67,8 @@ public final class Component {
         return zoneId;
     }
 
-    public int getTemperatureSensorForZoneComponentId() {
-        return temperatureSensorForZoneComponentId;
+    public int getTemperatureSensorForZoneId() {
+        return temperatureSensorForZoneId;
     }
 
     public double getTemperature() {

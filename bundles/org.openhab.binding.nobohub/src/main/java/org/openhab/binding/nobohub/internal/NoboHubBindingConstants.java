@@ -45,14 +45,13 @@ public class NoboHubBindingConstants {
     // List of all Channel ids
 
     // Hub
-    public static final String CHANNEL_HUB_ACTIVE_OVERRIDE_ID = "activeOverrideId";
     public static final String CHANNEL_HUB_ACTIVE_OVERRIDE_NAME = "activeOverrideName";
 
     // Zone
-    public static final String CHANNEL_ZONE_WEEK_PROFILE_ID = "activeWeekProfileId";
     public static final String CHANNEL_ZONE_WEEK_PROFILE_NAME = "activeWeekProfile";
     public static final String CHANNEL_ZONE_COMFORT_TEMPERATURE = "comfortTemperature";
     public static final String CHANNEL_ZONE_ECO_TEMPERATURE = "ecoTemperature";
+    public static final String CHANNEL_ZONE_CURRENT_TEMPERATURE = "currentTemperature";
 
     public static final DateTimeFormatter DATE_FORMAT_SECONDS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final DateTimeFormatter DATE_FORMAT_MINUTES = DateTimeFormatter.ofPattern("yyyyMMddHHmm");

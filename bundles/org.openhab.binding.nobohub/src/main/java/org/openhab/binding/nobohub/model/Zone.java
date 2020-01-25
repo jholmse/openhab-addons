@@ -13,6 +13,7 @@
 package org.openhab.binding.nobohub.model;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A Zone is a spece that contains one or more {@link Component}s.
@@ -28,6 +29,7 @@ public final class Zone {
     private final int comfortTemperature;
     private final int ecoTemperature;
     private final boolean allowOverrides;
+    private @Nullable Double temperature;
 
     public Zone(int id, String name, int activeWeekProfileId, int comfortTemperature, int ecoTemperature, boolean allowOverrides) throws NoboDataException {
         this.id = id;
@@ -76,5 +78,13 @@ public final class Zone {
 
     public boolean getAllowOverrides() {
         return allowOverrides;
+    }
+
+    public void setTemperature(@Nullable Double temperature) {
+        this.temperature = temperature;
+    }
+
+    public @Nullable Double getTemperature() {
+        return temperature;
     }
 }
