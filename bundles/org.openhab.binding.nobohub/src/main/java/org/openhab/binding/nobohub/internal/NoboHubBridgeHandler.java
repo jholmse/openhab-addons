@@ -34,7 +34,7 @@ import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.openhab.binding.nobohub.internal.connection.HubCommunicationThread;
 import org.openhab.binding.nobohub.internal.connection.HubConnection;
-import org.openhab.binding.nobohub.internal.discovery.NoboHubDiscoveryService;
+import org.openhab.binding.nobohub.internal.discovery.NoboThingDiscoveryService;
 import org.openhab.binding.nobohub.model.Component;
 import org.openhab.binding.nobohub.model.Hub;
 import org.openhab.binding.nobohub.model.Override;
@@ -58,7 +58,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
 
     private @Nullable NoboHubBridgeConfiguration config;
     private @Nullable HubCommunicationThread hubThread;
-    private @Nullable NoboHubDiscoveryService discoveryService;
+    private @Nullable NoboThingDiscoveryService discoveryService;
 
     private @NotNull Map<Integer, Override> overrideRegister = new HashMap<Integer, Override>();
     private @NotNull Map<Integer, WeekProfile> weekProfileRegister = new HashMap<Integer, WeekProfile>();
@@ -160,7 +160,9 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
 
     @java.lang.Override
     public void dispose() {
-        hubThread.stopNow();
+        if (hubThread != null) {
+            hubThread.stopNow();
+        }
     }
     
     @java.lang.Override
@@ -346,7 +348,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         }
     }
 
-    public void setDicsoveryService(NoboHubDiscoveryService discoveryService) {
+    public void setDicsoveryService(NoboThingDiscoveryService discoveryService) {
         this.discoveryService = discoveryService;
     }
 }

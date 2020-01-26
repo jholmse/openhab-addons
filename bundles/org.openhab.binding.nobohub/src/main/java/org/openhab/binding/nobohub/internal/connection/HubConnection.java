@@ -22,6 +22,10 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -44,6 +48,15 @@ public class HubConnection {
     private final InetAddress host;
     private final NoboHubBridgeHandler hubHandler;
     private final String serialNumber;
+
+    private static final Map<String, String> REJECT_REASONS = Stream.of(new String[][] { 
+        { "0", "Client command set too old, run it in with debug logs and let the maintainer know" }, 
+        { "1", "Hub serial number mismatch (should be 12 digits, if hub was autodetected, plase add the last three)" },
+        { "2", "Wrong number of arguments, run it in with debug logs and let the maintainer know" }, 
+        { "3", "Timestamp incorrectly formatted, run it in with debug logs and let the maintainer know" }, 
+    }).collect(Collectors.collectingAndThen(
+        Collectors.toMap(data -> data[0], data -> data[1]), 
+        Collections::<String, String> unmodifiableMap));
 
     private @Nullable Socket hubConnection;
     private @Nullable PrintWriter out;
@@ -70,7 +83,7 @@ public class HubConnection {
         if (null == helloRes || !helloRes.startsWith("HELLO")) {
             if (helloRes != null && helloRes.startsWith("REJECT")) {
                 String reject[] = helloRes.split(" ", 2);
-                throw new NoboCommunicationException(String.format("Hub rejects us with reason %s", reject[1]));
+                throw new NoboCommunicationException(String.format("Hub rejects us with reason %s: %s", reject[1], REJECT_REASONS.get(reject[1])));
             } else {
                 throw new NoboCommunicationException(String.format("Hub rejects us with unknown reason"));
             }

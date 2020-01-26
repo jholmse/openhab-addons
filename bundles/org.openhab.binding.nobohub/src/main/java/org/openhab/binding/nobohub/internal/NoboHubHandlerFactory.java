@@ -28,7 +28,7 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
-import org.openhab.binding.nobohub.internal.discovery.NoboHubDiscoveryService;
+import org.openhab.binding.nobohub.internal.discovery.NoboThingDiscoveryService;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Component;
 
@@ -74,7 +74,7 @@ public class NoboHubHandlerFactory extends BaseThingHandlerFactory {
     }
 
     private synchronized void registerDiscoveryService(NoboHubBridgeHandler bridgeHandler) {
-        NoboHubDiscoveryService discoveryService = new NoboHubDiscoveryService(bridgeHandler);
+        NoboThingDiscoveryService discoveryService = new NoboThingDiscoveryService(bridgeHandler);
         bridgeHandler.setDicsoveryService(discoveryService);
         this.discoveryServiceRegs.put(bridgeHandler.getThing().getUID(), getBundleContext()
                 .registerService(DiscoveryService.class.getName(), discoveryService, new Hashtable<String, Object>()));
@@ -83,7 +83,7 @@ public class NoboHubHandlerFactory extends BaseThingHandlerFactory {
     private synchronized void unregisterDiscoveryService(NoboHubBridgeHandler bridgeHandler) {
         ServiceRegistration<?> serviceReg = this.discoveryServiceRegs.remove(bridgeHandler.getThing().getUID());
         if (serviceReg != null) {
-            NoboHubDiscoveryService service = (NoboHubDiscoveryService) getBundleContext()
+            NoboThingDiscoveryService service = (NoboThingDiscoveryService) getBundleContext()
                     .getService(serviceReg.getReference());
             serviceReg.unregister();
             if (service != null) {
