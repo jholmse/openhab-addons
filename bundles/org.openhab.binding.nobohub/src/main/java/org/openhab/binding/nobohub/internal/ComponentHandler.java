@@ -26,6 +26,7 @@ import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.openhab.binding.nobohub.model.Component;
+import org.openhab.binding.nobohub.model.SerialNumber;
 import org.openhab.binding.nobohub.model.Zone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public class ComponentHandler extends BaseThingHandler {
 
     private final Logger logger = LoggerFactory.getLogger(ComponentHandler.class);
 
-    protected @Nullable String serialNumber;
+    protected @Nullable SerialNumber serialNumber;
 
     public ComponentHandler(Thing thing) {
         super(thing);
@@ -55,8 +56,9 @@ public class ComponentHandler extends BaseThingHandler {
             updateState(CHANNEL_COMPONENT_CURRENT_TEMPERATURE, currentTemperature);
         }
 
-        updateProperty("serialNumber", component.getSerialNumber());
+        updateProperty("serialNumber", component.getSerialNumber().toString());
         updateProperty("name", component.getName());
+        updateProperty("model", component.getSerialNumber().getComponentType());
 
         String zoneName = getZoneName(component.getZoneId());
         if (zoneName != null) {
@@ -82,8 +84,12 @@ public class ComponentHandler extends BaseThingHandler {
 
     @Override 
     public void initialize() {
-        this.serialNumber = getConfigAs(ComponentConfiguration.class).serialNumber;
-        updateStatus(ThingStatus.ONLINE);
+        this.serialNumber = new SerialNumber(getConfigAs(ComponentConfiguration.class).serialNumber);
+        if (!serialNumber.isWellFormed()) {
+            updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.CONFIGURATION_ERROR, "Illegal serial number: " + serialNumber);
+        } else {
+            updateStatus(ThingStatus.ONLINE);
+        }
     }
 
     @Override
@@ -94,7 +100,7 @@ public class ComponentHandler extends BaseThingHandler {
             NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
 
             if (null != serialNumber) {
-                String realSerialNumber = serialNumber;
+                SerialNumber realSerialNumber = serialNumber;
                 Component component = hubHandler.getComponent(realSerialNumber);
                 if (null == component) {
                     logger.error("Could not find Component with serial number {} for channel {}", serialNumber, channelUID);
@@ -113,7 +119,7 @@ public class ComponentHandler extends BaseThingHandler {
         logger.debug("The component is a read-only device and cannot handle commands.");
     }
 
-    public @Nullable String getSerialNumber() {
+    public @Nullable SerialNumber getSerialNumber() {
         return serialNumber;
     }
 }

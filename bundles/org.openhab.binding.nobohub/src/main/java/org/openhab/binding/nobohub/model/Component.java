@@ -22,14 +22,14 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 @NonNullByDefault
 public final class Component {
 
-    private final String serialNumber;
+    private final SerialNumber serialNumber;
     private final String name;
     private final boolean reverse;
     private final int zoneId;
     private final int temperatureSensorForZoneId;
     private double temperature;
 
-    public Component(String serialNumber, String name, boolean reverse, int zoneId, int temperatureSensorForZoneId) {
+    public Component(SerialNumber serialNumber, String name, boolean reverse, int zoneId, int temperatureSensorForZoneId) {
         this.serialNumber = serialNumber;
         this.name = name;
         this.reverse = reverse;
@@ -44,14 +44,19 @@ public final class Component {
             throw new NoboDataException(String.format("Unexpected number of parts from hub on H2 call: %d", parts.length));
         }
 
-        return new Component(ModelHelper.toJavaString(parts[1]),
+        SerialNumber serial = new SerialNumber(ModelHelper.toJavaString(parts[1]));
+        if (!serial.isWellFormed()) {
+            throw new NoboDataException(String.format("Illegal serial number: '%s'"));
+        }
+
+        return new Component(serial,
                              ModelHelper.toJavaString(parts[3]),
                              "1".equals(parts[4]),
                              Integer.parseInt(parts[5]),
                              Integer.parseInt(parts[7]));
     }
 
-    public String getSerialNumber() {
+    public SerialNumber getSerialNumber() {
         return serialNumber;
     }
 

@@ -89,13 +89,14 @@ public class NoboThingDiscoveryService extends AbstractDiscoveryService {
         ThingTypeUID thingType = THING_TYPE_COMPONENT;
 
         for (Component component : components) {
-            ThingUID thingId = new ThingUID(thingType, bridge, component.getSerialNumber());
+            ThingUID thingId = new ThingUID(thingType, bridge, component.getSerialNumber().toString());
             String label = component.getName();
 
             Map<String, Object> properties = new HashMap<>(1);
-            properties.put("serialNumber", component.getSerialNumber());
+            properties.put("serialNumber", component.getSerialNumber().toString());
             properties.put("name", component.getName());
             properties.put("vendor", VENDOR);
+            properties.put("model", component.getSerialNumber().getComponentType());
 
             String zoneName = getZoneName(component.getZoneId());
             if (zoneName != null) {

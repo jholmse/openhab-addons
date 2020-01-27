@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 @NonNullByDefault
 public class Hub {
 
-    private final String serialNumber;
+    private final SerialNumber serialNumber;
 
     private final String name;
 
@@ -34,7 +34,7 @@ public class Hub {
 
     private final String productionDate;
 
-    public Hub(String serialNumber, String name, int activeOverrideId, String softwareVersion, String hardwareVersion, String productionDate) {
+    public Hub(SerialNumber serialNumber, String name, int activeOverrideId, String softwareVersion, String hardwareVersion, String productionDate) {
         this.serialNumber = serialNumber;
         this.name = name;
         this.activeOverrideId = activeOverrideId;
@@ -51,7 +51,7 @@ public class Hub {
             throw new NoboDataException(String.format("Unexpected number of parts from hub on H5 call: %d", parts.length));
         }
 
-        return new Hub(ModelHelper.toJavaString(parts[1]),
+        return new Hub(new SerialNumber(ModelHelper.toJavaString(parts[1])),
                        ModelHelper.toJavaString(parts[2]),
                        Integer.parseInt(parts[4]),
                        ModelHelper.toJavaString(parts[5]),
@@ -59,7 +59,7 @@ public class Hub {
                        ModelHelper.toJavaString(parts[7]));
     }
 
-    public String getSerialNumber() {
+    public SerialNumber getSerialNumber() {
         return serialNumber;
     }
 

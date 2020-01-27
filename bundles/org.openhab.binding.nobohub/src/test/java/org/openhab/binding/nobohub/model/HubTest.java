@@ -29,7 +29,7 @@ public class HubTest {
     public void testParseH05() throws NoboDataException
     {
         Hub hub = Hub.fromH05("H05 102000092118 My Eco Hub 2880 4 114 11123610_rev._1 20190426");
-        assertEquals("102000092118", hub.getSerialNumber());
+        assertEquals(new SerialNumber("102000092118"), hub.getSerialNumber());
         assertEquals("My Eco Hub", hub.getName());
         assertEquals(4, hub.getActiveOverrideId());
         assertEquals("114", hub.getSoftwareVersion());
@@ -41,7 +41,7 @@ public class HubTest {
     public void testParseV03() throws NoboDataException
     {
         Hub hub = Hub.fromH05("V03 102000092118 My Eco Hub 2880 14 114 11123610_rev._1 20190426");
-        assertEquals("102000092118", hub.getSerialNumber());
+        assertEquals(new SerialNumber("102000092118"), hub.getSerialNumber());
         assertEquals("My Eco Hub", hub.getName());
         assertEquals(14, hub.getActiveOverrideId());
         assertEquals("114", hub.getSoftwareVersion());

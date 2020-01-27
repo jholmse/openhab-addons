@@ -38,6 +38,7 @@ import org.openhab.binding.nobohub.internal.discovery.NoboThingDiscoveryService;
 import org.openhab.binding.nobohub.model.Component;
 import org.openhab.binding.nobohub.model.Hub;
 import org.openhab.binding.nobohub.model.Override;
+import org.openhab.binding.nobohub.model.SerialNumber;
 import org.openhab.binding.nobohub.model.WeekProfile;
 import org.openhab.binding.nobohub.model.Zone;
 import org.openhab.binding.nobohub.model.NoboCommunicationException;
@@ -63,7 +64,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
     private @NotNull Map<Integer, Override> overrideRegister = new HashMap<Integer, Override>();
     private @NotNull Map<Integer, WeekProfile> weekProfileRegister = new HashMap<Integer, WeekProfile>();
     private @NotNull Map<Integer, Zone> zoneRegister = new HashMap<Integer, Zone>();
-    private @NotNull Map<String, Component> componentRegister = new HashMap<String, Component>();
+    private @NotNull Map<SerialNumber, Component> componentRegister = new HashMap<SerialNumber, Component>();
 
     public NoboHubBridgeHandler(Bridge bridge) {
         super(bridge);
@@ -213,7 +214,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             }
 
             updateProperty("name", hub.getName());
-            updateProperty("serialNumber", hub.getSerialNumber());
+            updateProperty("serialNumber", hub.getSerialNumber().toString());
             updateProperty("softwareVersion", hub.getSoftwareVersion());
             updateProperty("hardwareVersion", hub.getHardwareVersion());
             updateProperty("productionDate", hub.getProductionDate());
@@ -256,7 +257,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             Hub hub = Hub.fromH05(line);
 
             updateProperty("name", hub.getName());
-            updateProperty("serialNumber", hub.getSerialNumber());
+            updateProperty("serialNumber", hub.getSerialNumber().toString());
             updateProperty("softwareVersion", hub.getSoftwareVersion());
             updateProperty("hardwareVersion", hub.getHardwareVersion());
             updateProperty("productionDate", hub.getProductionDate());
@@ -267,7 +268,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             }
         } else if (line.startsWith("Y02")) {
             String parts[] = line.split(" ", 3);
-            String serialNumber = parts[1];
+            SerialNumber serialNumber = new SerialNumber(parts[1]);
             try {
                 if (parts[2] == null) {
                     throw new NoboDataException("Missing temperature data");
@@ -311,7 +312,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         return weekProfileRegister.get(id);
     }
 
-    public @Nullable Component getComponent(String serialNumber) {
+    public @Nullable Component getComponent(SerialNumber serialNumber) {
         return componentRegister.get(serialNumber);
     }
 

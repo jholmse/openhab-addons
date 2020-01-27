@@ -14,8 +14,12 @@ package org.openhab.binding.nobohub.internal;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
@@ -70,4 +74,28 @@ public class NoboHubBindingConstants {
     public static final String NOBO_HUB_BROADCAST_ADDRESS = "0.0.0.0";
     public static final int NOBO_HUB_MULTICAST_PORT = 10001;
     public static final String NOBO_HUB_MULTICAST_ADDRESS = "239.0.1.187";
+
+    // Mappings
+
+    public static final Map<String, String> REJECT_REASONS = Stream.of(new String[][] { 
+        { "0", "Client command set too old, run it in with debug logs and let the maintainer know" }, 
+        { "1", "Hub serial number mismatch (should be 12 digits, if hub was autodetected, plase add the last three)" },
+        { "2", "Wrong number of arguments, run it in with debug logs and let the maintainer know" }, 
+        { "3", "Timestamp incorrectly formatted, run it in with debug logs and let the maintainer know" }, 
+    }).collect(Collectors.collectingAndThen(
+        Collectors.toMap(data -> data[0], data -> data[1]), 
+        Collections::<String, String> unmodifiableMap));
+
+    // Full list of units: http://help.nobo.no/skriver/?chapterid=344&chapterlanguageid=2
+    public static final Map<String, String> SERIALNUMBERS_FOR_TYPES = Stream.of(new String[][] { 
+            { "120", "RS-700" }, 
+            { "168", "NCU-2R" },
+            { "186", "NTD-4R" },
+            { "192", "TXF" }, 
+            { "198", "NCU-ER" }, 
+            { "210", "NTB-2R" }, 
+            { "234", "Nobø Switch" }, 
+        }).collect(Collectors.collectingAndThen(
+            Collectors.toMap(data -> data[0], data -> data[1]), 
+            Collections::<String, String> unmodifiableMap));
 }
