@@ -90,6 +90,7 @@ public class NoboHubBindingConstants {
     public static final Map<String, String> SERIALNUMBERS_FOR_TYPES = Stream.of(new String[][] { 
             { "120", "RS-700" }, 
             { "168", "NCU-2R" },
+            { "184", "NCU-1R" },
             { "186", "NTD-4R" },
             { "192", "TXF" }, 
             { "198", "NCU-ER" }, 

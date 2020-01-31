@@ -84,11 +84,16 @@ public class ComponentHandler extends BaseThingHandler {
 
     @Override 
     public void initialize() {
-        this.serialNumber = new SerialNumber(getConfigAs(ComponentConfiguration.class).serialNumber);
-        if (!serialNumber.isWellFormed()) {
-            updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.CONFIGURATION_ERROR, "Illegal serial number: " + serialNumber);
+        String serialNumberString = getConfigAs(ComponentConfiguration.class).serialNumber;
+        if (serialNumberString != null) {
+            this.serialNumber = new SerialNumber(serialNumberString);
+            if (!this.serialNumber.isWellFormed()) {
+                updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.CONFIGURATION_ERROR, "Illegal serial number: " + serialNumber);
+            } else {
+                updateStatus(ThingStatus.ONLINE);
+            }    
         } else {
-            updateStatus(ThingStatus.ONLINE);
+            updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.CONFIGURATION_ERROR, "Missing serial number");
         }
     }
 

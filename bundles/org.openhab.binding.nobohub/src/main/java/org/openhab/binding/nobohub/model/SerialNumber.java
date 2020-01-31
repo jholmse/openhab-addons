@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nobohub.internal.NoboHubBindingConstants;
 
 /**
@@ -85,7 +86,7 @@ public final class SerialNumber {
     }
 
     @java.lang.Override
-    public boolean equals(Object obj) 
+    public boolean equals(@Nullable Object obj) 
     { 
         if (this == obj) {
             return true; 

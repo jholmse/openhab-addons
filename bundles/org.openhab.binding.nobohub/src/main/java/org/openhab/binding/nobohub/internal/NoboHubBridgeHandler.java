@@ -331,9 +331,12 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         this.getThing().getThings().forEach(thing -> {
             if (thing.getHandler() instanceof ComponentHandler) {
                 ComponentHandler handler = (ComponentHandler) thing.getHandler();
-                if (handler != null && component.getSerialNumber().equals(handler.getSerialNumber())) {
-                    handler.onUpdate(component);
-                }    
+                if (handler != null) {
+                    SerialNumber handlerSerial = handler.getSerialNumber();
+                    if (handlerSerial != null && component.getSerialNumber().equals(handlerSerial)) {
+                        handler.onUpdate(component);
+                    }        
+                }
             }
         });
     }
