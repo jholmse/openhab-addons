@@ -62,6 +62,18 @@ public final class Override {
                             Integer.parseInt(parts[7]));
     }
 
+    public String generateCommandString(final String command) {
+        return String.join(" ", 
+            command,
+            Integer.toString(id),
+            Integer.toString(mode.getNumValue()),
+            Integer.toString(type.getNumValue()),
+            ModelHelper.toHubDateMinutes(startTime),
+            ModelHelper.toHubDateMinutes(endTime),
+            Integer.toString(target.getNumValue()),
+            Integer.toString(targetId));
+    }
+
     public int getId() {
         return id;
     }

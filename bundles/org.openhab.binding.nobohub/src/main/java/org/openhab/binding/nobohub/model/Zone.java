@@ -56,6 +56,18 @@ public final class Zone {
                         "1".equals(parts[6]));
     }
 
+    public String generateCommandString(final String command) {
+        return String.join(" ", 
+            command,
+            Integer.toString(id),
+            ModelHelper.toHubString(name),
+            Integer.toString(activeWeekProfileId),
+            Integer.toString(comfortTemperature),
+            Integer.toString(ecoTemperature),
+            allowOverrides ? "1" : "0",
+            "-1"); // "Active override id" is deprecated
+    }
+
     public int getId() {
         return id;
     }

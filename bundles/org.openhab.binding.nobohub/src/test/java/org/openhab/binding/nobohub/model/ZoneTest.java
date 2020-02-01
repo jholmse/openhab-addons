@@ -26,8 +26,7 @@ import org.junit.Test;
 public class ZoneTest {
 
     @Test
-    public void testParseH01Simple() throws NoboDataException
-    {
+    public void testParseH01Simple() throws NoboDataException {
         Zone zone = Zone.fromH01("H01 1 1. etage 20 22 16 1 -1");
         assertEquals(1, zone.getId());
         assertEquals("1. etage", zone.getName());
@@ -37,4 +36,9 @@ public class ZoneTest {
         assertEquals(22, zone.getComfortTemperature());
     }
 
+    @Test
+    public void testGenerateCommand() throws NoboDataException {
+        Zone zone = Zone.fromH01("H01 1 1. etage 20 22 16 1 -1");
+        assertEquals("U00 1 1. etage 20 22 16 1 -1", zone.generateCommandString("U00"));
+    }
 }

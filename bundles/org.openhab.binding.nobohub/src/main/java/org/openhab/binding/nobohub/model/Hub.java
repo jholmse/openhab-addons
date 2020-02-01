@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.nobohub.model;
 
+import java.time.Duration;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
@@ -28,15 +30,18 @@ public class Hub {
 
     private final int activeOverrideId;
 
+    private final int defaultAwayOverrideLength;
+
     private final String softwareVersion;
 
     private final String hardwareVersion;
 
     private final String productionDate;
 
-    public Hub(SerialNumber serialNumber, String name, int activeOverrideId, String softwareVersion, String hardwareVersion, String productionDate) {
+    public Hub(SerialNumber serialNumber, String name, int defaultAwayOverrideLength, int activeOverrideId, String softwareVersion, String hardwareVersion, String productionDate) {
         this.serialNumber = serialNumber;
         this.name = name;
+        this.defaultAwayOverrideLength = defaultAwayOverrideLength;
         this.activeOverrideId = activeOverrideId;
         this.softwareVersion = softwareVersion;
         this.hardwareVersion = hardwareVersion;
@@ -53,10 +58,23 @@ public class Hub {
 
         return new Hub(new SerialNumber(ModelHelper.toJavaString(parts[1])),
                        ModelHelper.toJavaString(parts[2]),
+                       Integer.parseInt(parts[3]),
                        Integer.parseInt(parts[4]),
                        ModelHelper.toJavaString(parts[5]),
                        ModelHelper.toJavaString(parts[6]),
                        ModelHelper.toJavaString(parts[7]));
+    }
+
+    public String generateCommandString(final String command) {
+        return String.join(" ", 
+            command,
+            serialNumber.toString(),
+            ModelHelper.toHubString(name),
+            Integer.toString(defaultAwayOverrideLength),
+            Integer.toString(activeOverrideId),
+            ModelHelper.toHubString(softwareVersion),
+            ModelHelper.toHubString(hardwareVersion),
+            ModelHelper.toHubString(productionDate));
     }
 
     public SerialNumber getSerialNumber() {
@@ -65,6 +83,10 @@ public class Hub {
 
     public String getName() {
         return name;
+    }
+
+    public Duration getDefaultAwayOverrideLength() {
+        return Duration.ofMinutes(defaultAwayOverrideLength);
     }
 
     public int getActiveOverrideId() {

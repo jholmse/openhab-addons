@@ -14,6 +14,8 @@ package org.openhab.binding.nobohub.model;
 
 import static org.junit.Assert.assertEquals;
 
+import java.time.Duration;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.Test;
 
@@ -31,6 +33,7 @@ public class HubTest {
         Hub hub = Hub.fromH05("H05 102000092118 My Eco Hub 2880 4 114 11123610_rev._1 20190426");
         assertEquals(new SerialNumber("102000092118"), hub.getSerialNumber());
         assertEquals("My Eco Hub", hub.getName());
+        assertEquals(Duration.ofDays(2), hub.getDefaultAwayOverrideLength());
         assertEquals(4, hub.getActiveOverrideId());
         assertEquals("114", hub.getSoftwareVersion());
         assertEquals("11123610_rev._1", hub.getHardwareVersion());
@@ -43,10 +46,16 @@ public class HubTest {
         Hub hub = Hub.fromH05("V03 102000092118 My Eco Hub 2880 14 114 11123610_rev._1 20190426");
         assertEquals(new SerialNumber("102000092118"), hub.getSerialNumber());
         assertEquals("My Eco Hub", hub.getName());
+        assertEquals(Duration.ofDays(2), hub.getDefaultAwayOverrideLength());
         assertEquals(14, hub.getActiveOverrideId());
         assertEquals("114", hub.getSoftwareVersion());
         assertEquals("11123610_rev._1", hub.getHardwareVersion());
         assertEquals("20190426", hub.getProductionDate());
     }
 
+    @Test
+    public void testGenerateU03() throws NoboDataException {
+        Hub hub = Hub.fromH05("V03 102000092118 My Eco Hub 2880 14 114 11123610_rev._1 20190426");
+        assertEquals("U03 102000092118 My Eco Hub 2880 14 114 11123610_rev._1 20190426", hub.generateCommandString("U03"));
+    }
 }

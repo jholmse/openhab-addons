@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.nobohub.model;
 
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 
@@ -33,9 +34,18 @@ public final class ModelHelper {
      * @param noboString String where Char 160 (nobr space is used for space)
      * @return String with normal spaces.
      */
-    static String toJavaString(final String noboString)
-    {
+    static String toJavaString(final String noboString) {
         return noboString.replace((char) 160, ' ');
+    }
+
+    /**
+     * Converts a String in java to a string the Nobø hub can understand (fix spaces).
+     * 
+     * @param javaString String to send to Nobø hub
+     * @return String with Nobø hub spaces
+     */
+    static String toHubString(final String javaString) {
+        return javaString.replace(' ', (char) 160);
     }
 
     /**
@@ -46,8 +56,7 @@ public final class ModelHelper {
      */
     @Nullable
     static LocalDateTime toJavaDate(final String noboDateString) throws NoboDataException {
-        if ("-1".equals(noboDateString))
-        {
+        if ("-1".equals(noboDateString)) {
             return null;
         }
 
@@ -58,4 +67,15 @@ public final class ModelHelper {
         }
     }
 
+    static String toHubDateMinutes(final @Nullable LocalDateTime date) {
+        if (null == date) {
+            return "-1";
+        }
+
+        try {
+            return date.format(NoboHubBindingConstants.DATE_FORMAT_MINUTES);
+        } catch (DateTimeException dte) {
+            return "-1";
+        }
+    }
 }

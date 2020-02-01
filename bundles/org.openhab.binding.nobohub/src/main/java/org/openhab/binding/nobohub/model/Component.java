@@ -56,6 +56,18 @@ public final class Component {
                              Integer.parseInt(parts[7]));
     }
 
+    public String generateCommandString(final String command) {
+        return String.join(" ", 
+            command,
+            ModelHelper.toHubString(serialNumber.toString()),
+            "0", // Status not yet implemented in hub
+            ModelHelper.toHubString(name),
+            reverse ? "1" : "0",
+            Integer.toString(zoneId),
+            "-1", // Active Override Id not implemented in hub for components yet
+            Integer.toString(temperatureSensorForZoneId));
+    }
+    
     public SerialNumber getSerialNumber() {
         return serialNumber;
     }

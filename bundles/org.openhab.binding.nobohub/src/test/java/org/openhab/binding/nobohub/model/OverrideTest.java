@@ -64,4 +64,10 @@ public class OverrideTest {
         assertEquals(null, parsed.startTime());
         assertEquals(null, parsed.endTime());
     }
+
+    @Test
+    public void testAddA03WithStartDate() throws NoboDataException {
+        Override parsed = Override.fromH04("B03 9 3 1 202001221930 -1 0 -1");
+        assertEquals("A03 9 3 1 202001221930 -1 0 -1", parsed.generateCommandString("A03"));
+    }
 }

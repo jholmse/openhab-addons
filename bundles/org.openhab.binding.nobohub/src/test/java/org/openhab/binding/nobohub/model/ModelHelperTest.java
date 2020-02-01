@@ -46,6 +46,21 @@ public class ModelHelperTest {
     }
 
     @Test
+    public void testGenerateNoboStringNoSpace() {
+        assertEquals("NoSpace", ModelHelper.toHubString("NoSpace"));
+    }
+
+    @Test
+    public void testGenerateNoboStringNormalSpace() {
+        assertEquals("Contains" + (char) 160 +  "NoBreak", ModelHelper.toHubString("Contains" + (char) 160 +  "NoBreak"));
+    }
+
+    @Test
+    public void testGenerateNoboStringNoBreakSpace() {
+        assertEquals("Contains" + (char) 160 +  "NoBreak" + (char) 160 +  "Space", ModelHelper.toHubString("Contains NoBreak Space"));
+    }
+
+    @Test
     public void testParseNull() throws NoboDataException {
         assertEquals(null, ModelHelper.toJavaDate("-1"));
     }
@@ -61,4 +76,9 @@ public class ModelHelperTest {
         ModelHelper.toJavaDate("20201322h1930");
     }
 
+    @Test
+    public void testGenerateNoboDate() throws NoboDataException {
+        LocalDateTime date = LocalDateTime.of(2020, Month.JANUARY, 22, 19, 30);
+        assertEquals("202001221930", ModelHelper.toHubDateMinutes(date));
+    }
 }
