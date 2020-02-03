@@ -12,7 +12,11 @@
  */
 package org.openhab.binding.nobohub.model;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.nobohub.internal.NoboHubBindingConstants;
 
 /**
  * The normal week profile (used when no {@link Override}s exist).
@@ -55,5 +59,59 @@ public final class WeekProfile {
 
     public String getProfile() {
         return profile;
+    }
+
+    /**
+     * Returns the current status on the week profile (unless there is an override).
+     * 
+     * @param time The current time
+     * @return The current status (according to the week profile)
+     */
+    public WeekProfileStatus getStatusAt(LocalDateTime time) throws NoboDataException {
+        final DayOfWeek weekDay = time.getDayOfWeek();
+        final int dayNumber = weekDay.getValue();
+        final String timeString = time.format(NoboHubBindingConstants.TIME_FORMAT_MINUTES);
+        String parts[] = profile.split(",");
+
+        int dayCounter = 0;
+        for (int i = 0; i < parts.length; i++) {
+            String current = parts[i];
+            if (current.startsWith("0000")) {
+                dayCounter++;
+            }
+
+            if (current.length() != 5) {
+                throw new NoboDataException("Illegal week profile entry: " + current);
+            }
+
+            if (dayNumber == dayCounter) {
+                String next = "24000";
+                if (i+1 < parts.length) {
+                    if (!parts[i+1].startsWith("0000")) {
+                        next = parts[i+1];
+                    }
+                }
+
+                if (next.length() != 5) {
+                    throw new NoboDataException("Illegal week profile entry for next entry: " + next);
+                }
+
+                try {
+                    String currentTime = current.substring(0, 4); 
+                    String nextTime = next.substring(0, 4); 
+                    if (currentTime.compareTo(timeString) <= 0 && timeString.compareTo(nextTime) < 0) {
+                        try {
+                            return WeekProfileStatus.getByNumber(Integer.parseInt(String.valueOf(current.charAt(4))));
+                        } catch (NumberFormatException nfe) {
+                            throw new NoboDataException("Failed parsing week profile entry: " + current, nfe);
+                        }
+                    }    
+                } catch (IndexOutOfBoundsException oobe) {
+                    throw new NoboDataException("Illegal time string" + current + ", " + next, oobe);
+                }
+            }
+        }
+
+        throw new NoboDataException(String.format("Failed to calculate %s for day %d in '%s'", timeString, dayNumber, profile));
     }
 }

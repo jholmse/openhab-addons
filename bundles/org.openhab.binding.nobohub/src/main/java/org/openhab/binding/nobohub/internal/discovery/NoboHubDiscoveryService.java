@@ -72,33 +72,7 @@ public class NoboHubDiscoveryService extends AbstractDiscoveryService {
             logger.info("Detecting Glen Dimplex Nobø Hubs, trying Multicast");
             try {
                 MulticastSocket socket = new MulticastSocket(NOBO_HUB_MULTICAST_PORT);
-                try {
-                    InetAddress group = InetAddress.getByName(NOBO_HUB_MULTICAST_ADDRESS);
-                    socket.joinGroup(group);
-
-                    byte[] buffer = new byte[1024];
-                    DatagramPacket data = new DatagramPacket(buffer, buffer.length);
-                    String received = "";
-                    while (!received.startsWith("__NOBOHUB__")) {
-                        socket.setSoTimeout((int) Duration.ofSeconds(4).toMillis());
-                        socket.receive(data);
-                        received = new String(buffer, 0, data.getLength());
-                    }
-
-                    logger.debug("Hub detection multicast: Received: {} from {}", received, data.getAddress());    
-
-                    String parts[] = received.split("__", 3);
-                    if (3 != parts.length) {
-                        logger.debug("Data error, didn't contain three parts: '{}''", String.join("','", parts));
-                        return;
-                    }
-
-                    String serialNumberStart = parts[parts.length - 1];
-                    found = true;
-                    addDevice(serialNumberStart, data.getAddress().getHostName());
-                } finally {
-                    socket.close();
-                }
+                found = waitOnSocket(socket, "multicast");
             } catch (IOException ioex) {
                 logger.error("Failed detecting Nobø Hub multicast", ioex);
             }
@@ -108,35 +82,39 @@ public class NoboHubDiscoveryService extends AbstractDiscoveryService {
 
                 try {
                     DatagramSocket socket = new DatagramSocket(NOBO_HUB_BROADCAST_PORT, InetAddress.getByName(NOBO_HUB_BROADCAST_ADDRESS));
-                    try {
-                        socket.setBroadcast(true);
-
-                        byte[] buffer = new byte[1024];
-                        DatagramPacket data = new DatagramPacket(buffer, buffer.length);
-                        String received = "";
-                        while (!received.startsWith("__NOBOHUB__")) {
-                            socket.setSoTimeout((int) Duration.ofSeconds(4).toMillis());
-                            socket.receive(data);
-                            received = new String(buffer, 0, data.getLength());
-                        }
-
-                        logger.debug("Hub detection broadcast: Received: {} from {}", received, data.getAddress());    
-
-                        String parts[] = received.split("__", 3);
-                        if (3 != parts.length) {
-                            logger.debug("Data error, didn't contain three parts: '{}''", String.join("','", parts));
-                            return;
-                        }
-
-                        String serialNumberStart = parts[parts.length - 1];
-                        found = true;
-                        addDevice(serialNumberStart, data.getAddress().getHostName());                
-                    } finally {
-                        socket.close();
-                    }
+                    found = waitOnSocket(socket, "broadcast");
                 } catch (IOException ioex) {
                     logger.error("Failed detecting Nobø Hub broadcast", ioex);
                 }
+            }
+        }
+
+        private boolean waitOnSocket(DatagramSocket socket, String type) throws IOException {
+            try {
+                socket.setBroadcast(true);
+
+                byte[] buffer = new byte[1024];
+                DatagramPacket data = new DatagramPacket(buffer, buffer.length);
+                String received = "";
+                while (!received.startsWith("__NOBOHUB__")) {
+                    socket.setSoTimeout((int) Duration.ofSeconds(4).toMillis());
+                    socket.receive(data);
+                    received = new String(buffer, 0, data.getLength());
+                }
+
+                logger.debug("Hub detection {}}: Received: {} from {}", type, received, data.getAddress());    
+
+                String parts[] = received.split("__", 3);
+                if (3 != parts.length) {
+                    logger.debug("Data error, didn't contain three parts: '{}''", String.join("','", parts));
+                    return false;
+                }
+
+                String serialNumberStart = parts[parts.length - 1];
+                addDevice(serialNumberStart, data.getAddress().getHostName());
+                return true;
+            } finally {
+                socket.close();
             }
         }
 

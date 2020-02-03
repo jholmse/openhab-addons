@@ -68,6 +68,7 @@ public class NoboHubBindingConstants {
     // Date/time
     public static final DateTimeFormatter DATE_FORMAT_SECONDS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final DateTimeFormatter DATE_FORMAT_MINUTES = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+    public static final DateTimeFormatter TIME_FORMAT_MINUTES = DateTimeFormatter.ofPattern("HHmm");
 
     // Discovery
     public static final int NOBO_HUB_BROADCAST_PORT = 10000;

@@ -14,11 +14,9 @@ TODO:
 * Set eco and comfort temp for zone
 * Set Active Override in Zone (add override, delete current override, set current override)
 * Set Active Override for Hub
-* Calculate current mode (based on time, weekplan, override)
-* Unit tests for Component class
+* Show calculated mode for zones
 * Move models under internal directory
 * Unit tests of handler/autdetect classes
-* Reuse code in autodetect class
 
 ## Supported Things
 
