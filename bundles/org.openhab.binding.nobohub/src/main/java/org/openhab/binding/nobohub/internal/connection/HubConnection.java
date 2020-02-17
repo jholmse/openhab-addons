@@ -156,6 +156,10 @@ public class HubConnection {
         }
     }
 
+    public void sendCommand(String command) {
+        write(command);
+    }
+
     private void write(String s) {
         logger.debug("Sending '{}'", s);
         out.write(s);

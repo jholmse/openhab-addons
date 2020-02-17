@@ -14,6 +14,8 @@ package org.openhab.binding.nobohub.internal;
 
 import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.*;
 
+import java.time.LocalDateTime;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.library.types.DecimalType;
@@ -26,7 +28,9 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
+import org.openhab.binding.nobohub.model.NoboDataException;
 import org.openhab.binding.nobohub.model.WeekProfile;
+import org.openhab.binding.nobohub.model.WeekProfileStatus;
 import org.openhab.binding.nobohub.model.Zone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +63,18 @@ public class ZoneHandler extends BaseThingHandler {
         if (temp != null) {
             DecimalType currentTemperature = new DecimalType(temp);
             updateState(CHANNEL_ZONE_CURRENT_TEMPERATURE, currentTemperature);
+        }
+
+        int activeWeekProfileId = zone.getActiveWeekProfileId();
+        Bridge noboHub = getBridge();
+        NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
+        WeekProfile weekProfile = hubHandler.getWeekProfile(activeWeekProfileId);
+        updateState(CHANNEL_ZONE_WEEK_PROFILE_NAME,  StringType.valueOf(weekProfile.getName()));
+        try {
+            WeekProfileStatus weekProfileStatus = weekProfile.getStatusAt(LocalDateTime.now());
+            updateState(CHANNEL_ZONE_CALCULATED_WEEK_PROFILE_STATUS, StringType.valueOf(weekProfileStatus.name()));
+        } catch (NoboDataException nde) {
+            logger.error("Failed getting current week profile status", nde);
         }
 
         updateProperty("name", zone.getName());
@@ -103,10 +119,56 @@ public class ZoneHandler extends BaseThingHandler {
             return;
         }
 
-        logger.debug("The sensor is a read-only device and cannot handle commands.");
+        if (CHANNEL_ZONE_COMFORT_TEMPERATURE.equals(channelUID.getId())) {
+            Zone zone = getZone();
+            if (zone != null) {
+                if (command instanceof DecimalType) {
+                    DecimalType comfortTemp = (DecimalType) command;
+                    logger.debug("Set comfort temp for zone {} to {}", zone.getName(), comfortTemp.doubleValue());
+                    zone.setComfortTemperature(comfortTemp.intValue());
+                    sendCommand(zone.generateCommandString("U00"));
+                }    
+            }
+
+            return;
+        }
+
+        if (CHANNEL_ZONE_ECO_TEMPERATURE.equals(channelUID.getId())) {
+            Zone zone = getZone();
+            if (zone != null) {
+                if (command instanceof DecimalType) {
+                    DecimalType ecoTemp = (DecimalType) command;
+                    logger.debug("Set eco temp for zone {} to {}", zone.getName(), ecoTemp.doubleValue());
+                    zone.setEcoTemperature(ecoTemp.intValue());
+                    sendCommand(zone.generateCommandString("U00"));
+                }
+            }
+
+            return;
+        }
+
+        logger.debug("Unhandled zone command {}: {}", channelUID.getId(), command);
     }
 
     public @Nullable Integer getZoneId() {
         return id;
+    }
+
+    private void sendCommand(String command) {
+        Bridge noboHub = getBridge();
+        NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
+        hubHandler.sendCommand(command);
+    }
+
+    private @Nullable Zone getZone() {
+        Bridge noboHub = getBridge();
+        NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
+
+        if (null == id) {
+            return null;
+        }
+
+        Integer zid = id;
+        return hubHandler.getZone(zid);
     }
 }

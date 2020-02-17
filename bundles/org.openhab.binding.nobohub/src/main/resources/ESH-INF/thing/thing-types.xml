@@ -47,6 +47,7 @@
 			<channel id="comfortTemperature" typeId="comfort-temperature-channel-type" />
 			<channel id="ecoTemperature" typeId="eco-temperature-channel-type" />
 			<channel id="currentTemperature" typeId="temperature-channel-type" />
+			<channel id="calculatedWeekProfileStatus" typeId="activeOverrideName-channel-type" />
 		</channels>
 
 		<properties>
@@ -104,21 +105,21 @@
 	<channel-type id="eco-temperature-channel-type">
 		<item-type>Number</item-type>
 		<label>Eco Temperature</label>
-		<category>Temperature</category>
+		<category>Eco Temperature</category>
 		<tags>
 			<tag>TargetTemperature</tag>
 		</tags>
-		<state min="7" max="30" readOnly="true" />
+		<state min="7" max="30" step="1" pattern="%d °C" readOnly="false" />
 	</channel-type>
 
 	<channel-type id="comfort-temperature-channel-type">
 		<item-type>Number</item-type>
 		<label>Comfort Temperature</label>
-		<category>Temperature</category>
+		<category>Comfort Temperature</category>
 		<tags>
 			<tag>TargetTemperature</tag>
 		</tags>
-		<state min="7" max="30" readOnly="true" />
+		<state min="7" max="30" step="1" pattern="%d °C" readOnly="false" />
 	</channel-type>
 
 	<channel-type id="temperature-channel-type">
@@ -128,7 +129,7 @@
 		<tags>
 			<tag>CurrentTemperature</tag>
 		</tags>
-		<state readOnly="true" />
+		<state pattern="%.3f °C" readOnly="true" />
 	</channel-type>
 
 	<channel-type id="weekProfileName-channel-type">

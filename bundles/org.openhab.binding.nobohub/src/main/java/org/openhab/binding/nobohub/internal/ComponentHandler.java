@@ -121,10 +121,21 @@ public class ComponentHandler extends BaseThingHandler {
             return;
         }
 
-        logger.debug("The component is a read-only device and cannot handle commands.");
+        logger.debug("This component is a read-only device and cannot handle commands.");
     }
 
     public @Nullable SerialNumber getSerialNumber() {
         return serialNumber;
+    }
+
+    private @Nullable Component getComponent() {
+        Bridge noboHub = getBridge();
+        NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
+        if (null == serialNumber) {
+            return null;
+        }
+
+        SerialNumber sn = serialNumber;
+        return hubHandler.getComponent(sn);
     }
 }

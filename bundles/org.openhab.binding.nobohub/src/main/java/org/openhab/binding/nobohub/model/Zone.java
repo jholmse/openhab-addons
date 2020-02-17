@@ -26,8 +26,8 @@ public final class Zone {
     private final int id;
     private final String name;
     private final int activeWeekProfileId;
-    private final int comfortTemperature;
-    private final int ecoTemperature;
+    private int comfortTemperature;
+    private int ecoTemperature;
     private final boolean allowOverrides;
     private @Nullable Double temperature;
 
@@ -98,5 +98,13 @@ public final class Zone {
 
     public @Nullable Double getTemperature() {
         return temperature;
+    }
+
+    public void setComfortTemperature(int temp) {
+        comfortTemperature = temp;
+    }
+
+    public void setEcoTemperature(int temp) {
+        ecoTemperature = temp;
     }
 }

@@ -58,6 +58,7 @@ public class NoboHubBindingConstants {
 
     // Zone
     public static final String CHANNEL_ZONE_WEEK_PROFILE_NAME = "activeWeekProfile";
+    public static final String CHANNEL_ZONE_CALCULATED_WEEK_PROFILE_STATUS = "calculatedWeekProfileStatus";
     public static final String CHANNEL_ZONE_COMFORT_TEMPERATURE = "comfortTemperature";
     public static final String CHANNEL_ZONE_ECO_TEMPERATURE = "ecoTemperature";
     public static final String CHANNEL_ZONE_CURRENT_TEMPERATURE = "currentTemperature";
