@@ -70,4 +70,19 @@ public class OverrideTest {
         Override parsed = Override.fromH04("B03 9 3 1 202001221930 -1 0 -1");
         assertEquals("A03 9 3 1 202001221930 -1 0 -1", parsed.generateCommandString("A03"));
     }
+
+    @Test
+    public void testFromMode() {
+        LocalDateTime date = LocalDateTime.of(2020, Month.FEBRUARY, 21, 21, 42);
+        Override override = Override.fromMode(OverrideMode.AWAY, date);
+        assertEquals("A03 1 3 0 -1 -1 0 -1", override.generateCommandString("A03"));
+    }
+
+    @Test
+    public void testModeNames() throws NoboDataException {
+        assertEquals(OverrideMode.AWAY, OverrideMode.getByName("Away"));
+        assertEquals(OverrideMode.ECO, OverrideMode.getByName("ECO"));
+        assertEquals(OverrideMode.NORMAL, OverrideMode.getByName("Normal"));
+        assertEquals(OverrideMode.COMFORT, OverrideMode.getByName("COMFORT"));
+    }
 }

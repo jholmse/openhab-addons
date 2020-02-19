@@ -38,6 +38,7 @@ import org.openhab.binding.nobohub.internal.discovery.NoboThingDiscoveryService;
 import org.openhab.binding.nobohub.model.Component;
 import org.openhab.binding.nobohub.model.Hub;
 import org.openhab.binding.nobohub.model.Override;
+import org.openhab.binding.nobohub.model.OverrideMode;
 import org.openhab.binding.nobohub.model.SerialNumber;
 import org.openhab.binding.nobohub.model.WeekProfile;
 import org.openhab.binding.nobohub.model.Zone;
@@ -60,6 +61,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
     private @Nullable NoboHubBridgeConfiguration config;
     private @Nullable HubCommunicationThread hubThread;
     private @Nullable NoboThingDiscoveryService discoveryService;
+    private @Nullable Hub hub;
 
     private @NotNull Map<Integer, Override> overrideRegister = new HashMap<Integer, Override>();
     private @NotNull Map<Integer, WeekProfile> weekProfileRegister = new HashMap<Integer, WeekProfile>();
@@ -88,7 +90,32 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         }
 
         if (CHANNEL_HUB_ACTIVE_OVERRIDE_NAME.equals(channelUID.getId())) {
-            logger.debug("TODO: Set override for hub {} to {}", channelUID, command);
+            if (hubThread != null && hub != null)
+            {
+                Hub hubNotNull = hub;
+                if (command instanceof StringType) {
+                    StringType strCommand = (StringType) command;
+                    logger.debug("Changing override for hub {} to {}", channelUID, strCommand.toString());
+                    try {
+                        OverrideMode mode = OverrideMode.getByName(strCommand.toFullString());
+                        hubThread.getConnection().setOverride(hubNotNull, mode);
+                    } catch (NoboCommunicationException nce) {
+                        logger.error("Failed setting override mode", nce);
+                    } catch (NoboDataException nde) {
+                        logger.error("Date format error setting override mode", nde);
+                    }
+                } else {
+                    logger.error("Command of wrong type: {} ({})", command, command.getClass().getName());
+                }
+            } else {
+                if (null == hub) {
+                    logger.error("Could not set override, hub not detected yet");
+                }
+
+                if (null == hubThread) {
+                    logger.error("Could not set override, hub connection thread not set up yet");
+                }
+            }
         }
     }
 
@@ -177,6 +204,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
     }
 
     private void onUpdate(Hub hub) {
+        this.hub = hub;
         Override activeOverride = overrideRegister.get(hub.getActiveOverrideId());
         if (activeOverride != null) {
             updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME, StringType.valueOf(activeOverride.getMode().name()));

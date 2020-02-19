@@ -44,4 +44,22 @@ public enum OverrideMode {
     public int getNumValue() {
         return numValue;
     }
+
+    public static OverrideMode getByName(String name) throws NoboDataException {
+        if (null == name) {
+            throw new NoboDataException("Missing name");
+        }
+
+        if (name.equalsIgnoreCase("Normal")) {
+            return NORMAL;
+        } else if (name.equalsIgnoreCase("Comfort")) {
+            return COMFORT;
+        } else if (name.equalsIgnoreCase("Eco")) {
+            return ECO;
+        } else if (name.equalsIgnoreCase("Away")) {
+            return AWAY;
+        }
+
+        throw new NoboDataException(String.format("Unknown name of override mode: '%s'", name));
+    }
 }

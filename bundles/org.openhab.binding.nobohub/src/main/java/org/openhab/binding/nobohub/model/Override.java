@@ -62,6 +62,10 @@ public final class Override {
                             Integer.parseInt(parts[7]));
     }
 
+    public static Override fromMode(OverrideMode mode, LocalDateTime date) {
+        return new Override(1, mode, OverrideType.NOW, null, null, OverrideTarget.HUB, -1);
+    }
+
     public String generateCommandString(final String command) {
         return String.join(" ", 
             command,
@@ -103,5 +107,4 @@ public final class Override {
     public int getTargetId() {
         return targetId;
     }
-
 }

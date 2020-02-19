@@ -27,7 +27,11 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nobohub.internal.NoboHubBindingConstants;
 import org.openhab.binding.nobohub.internal.NoboHubBridgeHandler;
+import org.openhab.binding.nobohub.model.Hub;
 import org.openhab.binding.nobohub.model.NoboCommunicationException;
+import org.openhab.binding.nobohub.model.NoboDataException;
+import org.openhab.binding.nobohub.model.Override;
+import org.openhab.binding.nobohub.model.OverrideMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,6 +96,24 @@ public class HubConnection {
         } else {
             write("HANDSHAKE\r");
         }
+    }
+
+    public void setOverride(Hub hub, OverrideMode nextMode) throws NoboDataException, NoboCommunicationException {
+        if (!isConnected()) {
+            connect();
+        }
+
+        Override override = Override.fromMode(nextMode, LocalDateTime.now());
+        sendCommand(override.generateCommandString("A03"));
+        String line = "";
+        while (line != null && !line.startsWith("B03")) {
+            line = readLine();
+            hubHandler.receivedData(line);
+        }
+
+        Override newOverride = Override.fromH04(line);
+        hub.setActiveOverrideId(newOverride.getId());
+        sendCommand(hub.generateCommandString("U03"));        
     }
 
     public void refreshAll() throws NoboCommunicationException {

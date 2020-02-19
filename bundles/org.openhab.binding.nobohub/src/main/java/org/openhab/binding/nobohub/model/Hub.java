@@ -28,7 +28,7 @@ public class Hub {
 
     private final String name;
 
-    private final int activeOverrideId;
+    private int activeOverrideId;
 
     private final int defaultAwayOverrideLength;
 
@@ -92,7 +92,11 @@ public class Hub {
     public int getActiveOverrideId() {
         return activeOverrideId;
     }
-    
+
+    public void setActiveOverrideId(int id) {
+        activeOverrideId = id;
+    }
+
     public String getSoftwareVersion() {
         return softwareVersion;
     }
