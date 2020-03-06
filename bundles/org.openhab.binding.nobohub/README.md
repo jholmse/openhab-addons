@@ -4,30 +4,33 @@ This binding controls the Glen Dimplex Nobø Hub using the Nobø Hub API v1.1 th
 
 <img href="doc/nobohub.jpg"/>
 
-It gets information from the following devices:
+It lets you read and change temperature settings for zones, and read and set active overrides to change the global 
+mode of the hub.
 
-* Ovens
+This binding is tested with the following devices:
+
+* Thermostats for differen electrical ovens
 * Nobø Switch SW 4
 
 TODO:
 
-* Set Active Override for Hub (add override, delete current override, set current override)
+* Spamming handshake
+* H00 every 10 mins?
 * Move models under internal directory
 * Unit tests of handler/autdetect classes
 
 ## Supported Things
 
-_Please describe the different supported things / devices within this section._
-_Which different types are supported, which models were tested etc.?_
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/ESH-INF/thing``` of your binding._
+Nobø Hub is the hub that communicates with switches and thermostats. 
 
 ## Discovery
 
-_Describe the available auto-discovery features here. Mention for what it works and what needs to be kept in mind when using it._
+The hub will be automatically discovered. Before it can be used, you will have to update the configuration
+with the last three digits of its serial number.
+
+When the hub is configured with the correct serial number, it will autodetect zones and components (thermostats and switches). 
 
 ## Binding Configuration
-
-_If your binding requires or supports general configuration settings, please create a folder ```cfg``` and place the configuration file ```<bindingId>.cfg``` inside it. In this section, you should link to this file and provide some information about the options. The file could e.g. look like:_
 
 ```
 # Configuration for Nobø Hub
@@ -41,14 +44,33 @@ hostName=10.0.0.10
 
 ## Channels
 
-| channel  | type   | description                  |
-|----------|--------|------------------------------|
-| control  | Switch | This is the control channel  |
+### Hub
+
+| channel             | type   | description                      |
+|---------------------|--------|----------------------------------|
+| activeOverrideName  | String | The name of the active override  |
+
+### Zone
+
+| channel                      | type   | description                                |
+|------------------------------|--------|--------------------------------------------|
+| activeWeekProfile            | String | The name of the active week profile        |
+| comfortTemperature           | Number | The configured comfort temperature         |
+| ecoTemperature               | Number | The configured eco temparature             |
+| currentTemperature           | Number | The current temperature in the zone        |
+| calculatedWeekProfileStatus  | String | The current override based on week profile |
+
+CurrentTemperature only works if the zone has a device that reports it (e.g. a switch).
+
+### Component
+
+| channel             | type   | description                              |
+|---------------------|--------|------------------------------------------|
+| currentTemperature  | Number | The current temperature of the component |
+
+Not all devices report this.
 
 ## Full Example
 
-_Provide a full usage example based on textual configuration files (*.things, *.items, *.sitemap)._
-
-## Any custom content here!
-
-_Feel free to add additional sections for whatever you think should also be mentioned about your binding!_
+The author has just used the Paper UI to configure the system. If anybody has example file that can be included 
+here, please send it to the author.

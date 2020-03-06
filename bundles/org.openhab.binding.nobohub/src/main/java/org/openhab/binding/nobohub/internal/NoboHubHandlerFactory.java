@@ -31,6 +31,8 @@ import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openhab.binding.nobohub.internal.discovery.NoboThingDiscoveryService;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@link NoboHubHandlerFactory} is responsible for creating things and thing
@@ -42,6 +44,7 @@ import org.osgi.service.component.annotations.Component;
 @Component(configurationPid = "binding.nobohub", service = ThingHandlerFactory.class)
 public class NoboHubHandlerFactory extends BaseThingHandlerFactory {
 
+    private final Logger logger = LoggerFactory.getLogger(NoboHubHandlerFactory.class);
     private final Map<ThingUID, ServiceRegistration<?>> discoveryServiceRegs = new HashMap<>();
 
     @Override
@@ -81,14 +84,16 @@ public class NoboHubHandlerFactory extends BaseThingHandlerFactory {
     }
 
     private synchronized void unregisterDiscoveryService(NoboHubBridgeHandler bridgeHandler) {
-        ServiceRegistration<?> serviceReg = this.discoveryServiceRegs.remove(bridgeHandler.getThing().getUID());
-        if (serviceReg != null) {
+        try {
+            ServiceRegistration<?> serviceReg = this.discoveryServiceRegs.remove(bridgeHandler.getThing().getUID());
             NoboThingDiscoveryService service = (NoboThingDiscoveryService) getBundleContext()
                     .getService(serviceReg.getReference());
             serviceReg.unregister();
             if (service != null) {
                 service.deactivate();
             }
+        } catch (IllegalArgumentException iae) {
+            logger.error("Failed to unregister service", iae);
         }
     }
 }

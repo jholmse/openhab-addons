@@ -51,10 +51,8 @@ public class ComponentHandler extends BaseThingHandler {
         updateStatus(ThingStatus.ONLINE);
 
         Double temp = component.getTemperature();
-        if (temp != null) {
-            DecimalType currentTemperature = new DecimalType(temp);
-            updateState(CHANNEL_COMPONENT_CURRENT_TEMPERATURE, currentTemperature);
-        }
+        DecimalType currentTemperature = new DecimalType(temp);
+        updateState(CHANNEL_COMPONENT_CURRENT_TEMPERATURE, currentTemperature);
 
         updateProperty("serialNumber", component.getSerialNumber().toString());
         updateProperty("name", component.getName());
@@ -73,23 +71,28 @@ public class ComponentHandler extends BaseThingHandler {
 
     private @Nullable String getZoneName(int zoneId) {
         Bridge noboHub = getBridge();
-        NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
-        Zone zone = hubHandler.getZone(zoneId);
-        if (null == zone) {
-            return null;
+        if (null != noboHub) {
+            NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
+            if (hubHandler != null) {
+                Zone zone = hubHandler.getZone(zoneId);
+                if (null != zone) {
+                    return zone.getName();
+                }
+            }
         }
 
-        return zone.getName();
+        return null;
     }
 
     @Override 
     public void initialize() {
         String serialNumberString = getConfigAs(ComponentConfiguration.class).serialNumber;
         if (serialNumberString != null) {
-            this.serialNumber = new SerialNumber(serialNumberString);
-            if (!this.serialNumber.isWellFormed()) {
+            SerialNumber sn = new SerialNumber(serialNumberString);
+            if (!sn.isWellFormed()) {
                 updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.CONFIGURATION_ERROR, "Illegal serial number: " + serialNumber);
             } else {
+                this.serialNumber = sn;
                 updateStatus(ThingStatus.ONLINE);
             }    
         } else {
@@ -101,12 +104,8 @@ public class ComponentHandler extends BaseThingHandler {
     public void handleCommand(ChannelUID channelUID, Command command) {
         if (command instanceof RefreshType) {
             logger.debug("Refreshing channel {}", channelUID);
-            Bridge noboHub = getBridge();
-            NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
-
             if (null != serialNumber) {
-                SerialNumber realSerialNumber = serialNumber;
-                Component component = hubHandler.getComponent(realSerialNumber);
+                Component component = getComponent();
                 if (null == component) {
                     logger.error("Could not find Component with serial number {} for channel {}", serialNumber, channelUID);
                     updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.GONE);
@@ -130,12 +129,15 @@ public class ComponentHandler extends BaseThingHandler {
 
     private @Nullable Component getComponent() {
         Bridge noboHub = getBridge();
-        NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
-        if (null == serialNumber) {
-            return null;
+        if (null != noboHub) {
+            NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();        
+            if (null != serialNumber && null != hubHandler) {
+                SerialNumber sn = Helpers.castToNonNull(serialNumber, "serialNumber");
+                NoboHubBridgeHandler hh = Helpers.castToNonNull(hubHandler, "hubHandler");
+                return hh.getComponent(sn);
+            }
         }
 
-        SerialNumber sn = serialNumber;
-        return hubHandler.getComponent(sn);
+        return null;
     }
 }

@@ -80,7 +80,8 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             try {
                 if (hubThread != null)
                 {
-                    hubThread.getConnection().refreshAll();
+                    HubCommunicationThread ht = Helpers.castToNonNull(hubThread, "hubThread");
+                    ht.getConnection().refreshAll();
                 }
             } catch (NoboCommunicationException noboEx) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Failed to get status: " + noboEx.getMessage());
@@ -92,13 +93,14 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         if (CHANNEL_HUB_ACTIVE_OVERRIDE_NAME.equals(channelUID.getId())) {
             if (hubThread != null && hub != null)
             {
-                Hub hubNotNull = hub;
+                HubCommunicationThread ht = Helpers.castToNonNull(hubThread, "hubThread");
+                Hub h = Helpers.castToNonNull(hub, "hub");
                 if (command instanceof StringType) {
                     StringType strCommand = (StringType) command;
                     logger.debug("Changing override for hub {} to {}", channelUID, strCommand.toString());
                     try {
                         OverrideMode mode = OverrideMode.getByName(strCommand.toFullString());
-                        hubThread.getConnection().setOverride(hubNotNull, mode);
+                        ht.getConnection().setOverride(h, mode);
                     } catch (NoboCommunicationException nce) {
                         logger.error("Failed setting override mode", nce);
                     } catch (NoboDataException nde) {
@@ -130,21 +132,23 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             return;
         }
 
-        String serialNumber = config.serialNumber;
+        NoboHubBridgeConfiguration c = Helpers.castToNonNull(config, "config");
+
+        String serialNumber = c.serialNumber;
         if (null == serialNumber)
         {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Missing serial number in configuration");
             return;
         }
 
-        String hostName = config.hostName;
+        String hostName = c.hostName;
         if (null == hostName)
         {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Missing host name in configuration");
             return;
         }
 
-        logger.info("Looking for Hub {} at {}", config.serialNumber, config.hostName);
+        logger.info("Looking for Hub {} at {}", c.serialNumber, c.hostName);
 
         // Set the thing status to UNKNOWN temporarily and let the background task decide for the real status.
         updateStatus(ThingStatus.UNKNOWN);
@@ -158,16 +162,17 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
                 logger.debug("Done connecting to {} ({})", hostName, serialNumber);
 
                 Duration timeout = Duration.ofSeconds(14);
-                if (config.pollingInterval > 0) {
-                    timeout = Duration.ofSeconds(config.pollingInterval);
+                if (c.pollingInterval > 0) {
+                    timeout = Duration.ofSeconds(c.pollingInterval);
                 }
 
                 logger.debug("Starting communication thread to {}", hostName);
 
-                hubThread = new HubCommunicationThread(conn, timeout);
-                hubThread.start();
+                HubCommunicationThread ht = new HubCommunicationThread(conn, timeout);
+                ht.start();
+                hubThread = ht;
 
-                if (hubThread.getConnection().isConnected()) {
+                if (ht.getConnection().isConnected()) {
                     logger.debug("Communication thread to {} is up and running, we are online", hostName);
                     updateProperty("serialNumber", serialNumber);
                     updateStatus(ThingStatus.ONLINE);
@@ -189,7 +194,9 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
     @java.lang.Override
     public void dispose() {
         if (hubThread != null) {
-            hubThread.stopNow();
+            logger.info("Stopping communication thread");
+            HubCommunicationThread ht = Helpers.castToNonNull(hubThread, "hubThread");
+            ht.stopNow();
         }
     }
     
@@ -206,9 +213,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
     private void onUpdate(Hub hub) {
         this.hub = hub;
         Override activeOverride = overrideRegister.get(hub.getActiveOverrideId());
-        if (activeOverride != null) {
-            updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME, StringType.valueOf(activeOverride.getMode().name()));
-        }
+        updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME, StringType.valueOf(activeOverride.getMode().name()));
 
         updateProperty("name", hub.getName());
         updateProperty("serialNumber", hub.getSerialNumber().toString());
@@ -235,11 +240,19 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         if (line.startsWith("H01")) {
             Zone zone = Zone.fromH01(line);
             zoneRegister.put(zone.getId(), zone);
-            discoveryService.detectZones(zoneRegister.values());
+            if (null != discoveryService)
+            {
+                NoboThingDiscoveryService ds = Helpers.castToNonNull(discoveryService, "discoveryService");
+                ds.detectZones(zoneRegister.values());
+            }
         } else if (line.startsWith("H02")) {
             Component component = Component.fromH02(line);
             componentRegister.put(component.getSerialNumber(), component);
-            discoveryService.detectComponents(componentRegister.values());
+            if (null != discoveryService)
+            {
+                NoboThingDiscoveryService ds = Helpers.castToNonNull(discoveryService, "discoveryService");
+                ds.detectComponents(componentRegister.values());
+            }
         } else if (line.startsWith("H03")) {
             WeekProfile weekProfile = WeekProfile.fromH03(line);
             weekProfileRegister.put(weekProfile.getId(), weekProfile);
@@ -264,11 +277,19 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         } else if (line.startsWith("B00")) {
             Zone zone = Zone.fromH01(line);
             zoneRegister.put(zone.getId(), zone);
-            discoveryService.detectZones(zoneRegister.values());
+            if (null != discoveryService)
+            {
+                NoboThingDiscoveryService ds = Helpers.castToNonNull(discoveryService, "discoveryService");
+                ds.detectZones(zoneRegister.values());
+            }
         } else if (line.startsWith("B01")) {
             Component component = Component.fromH02(line);
             componentRegister.put(component.getSerialNumber(), component);
-            discoveryService.detectComponents(componentRegister.values());
+            if (null != discoveryService)
+            {
+                NoboThingDiscoveryService ds = Helpers.castToNonNull(discoveryService, "discoveryService");
+                ds.detectComponents(componentRegister.values());
+            }
         } else if (line.startsWith("B02")) {
             WeekProfile weekProfile = WeekProfile.fromH03(line);
             weekProfileRegister.put(weekProfile.getId(), weekProfile);
@@ -300,17 +321,13 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
                 double temp = Double.parseDouble(parts[2]);
                 Component component = componentRegister.get(serialNumber);
                 
-                if (component != null) {
-                    component.setTemperature(temp); 
-                    refreshComponent(component);           
-                    int zoneId = component.getTemperatureSensorForZoneId();    
-                    if (zoneId >= 0) {
-                        Zone zone = zoneRegister.get(zoneId);
-                        if (zone != null) {
-                            zone.setTemperature(temp);
-                            refreshZone(zone);
-                        }
-                    }
+                component.setTemperature(temp); 
+                refreshComponent(component);           
+                int zoneId = component.getTemperatureSensorForZoneId();    
+                if (zoneId >= 0) {
+                    Zone zone = zoneRegister.get(zoneId);
+                    zone.setTemperature(temp);
+                    refreshZone(zone);
                 }
             } catch (NumberFormatException nfe) {
                 throw new NoboDataException(String.format("Failed to parse temperature %s: %s", parts[2], nfe.getMessage()), nfe);
@@ -341,10 +358,9 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
 
     public void sendCommand(String command) {
         if (hubThread != null) {
-            HubConnection conn = hubThread.getConnection();
-            if (conn != null) {
-                conn.sendCommand(command);
-            }                
+            HubCommunicationThread ht = Helpers.castToNonNull(hubThread, "hubThread");
+            HubConnection conn = ht.getConnection();
+            conn.sendCommand(command);
         }
     }
 
@@ -377,7 +393,8 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         try {
             if (hubThread != null)
             {
-                hubThread.getConnection().refreshAll();
+                HubCommunicationThread ht = Helpers.castToNonNull(hubThread, "hubThread");
+                ht.getConnection().refreshAll();
             }
         } catch (NoboCommunicationException noboEx) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Failed to get status: " + noboEx.getMessage());

@@ -67,14 +67,20 @@ public class ZoneHandler extends BaseThingHandler {
 
         int activeWeekProfileId = zone.getActiveWeekProfileId();
         Bridge noboHub = getBridge();
-        NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
-        WeekProfile weekProfile = hubHandler.getWeekProfile(activeWeekProfileId);
-        updateState(CHANNEL_ZONE_WEEK_PROFILE_NAME,  StringType.valueOf(weekProfile.getName()));
-        try {
-            WeekProfileStatus weekProfileStatus = weekProfile.getStatusAt(LocalDateTime.now());
-            updateState(CHANNEL_ZONE_CALCULATED_WEEK_PROFILE_STATUS, StringType.valueOf(weekProfileStatus.name()));
-        } catch (NoboDataException nde) {
-            logger.error("Failed getting current week profile status", nde);
+        if (null != noboHub) {
+            NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
+            if (hubHandler != null) {
+                WeekProfile weekProfile = hubHandler.getWeekProfile(activeWeekProfileId);
+                if (null != weekProfile) {
+                    updateState(CHANNEL_ZONE_WEEK_PROFILE_NAME,  StringType.valueOf(weekProfile.getName()));
+                    try {
+                        WeekProfileStatus weekProfileStatus = weekProfile.getStatusAt(LocalDateTime.now());
+                        updateState(CHANNEL_ZONE_CALCULATED_WEEK_PROFILE_STATUS, StringType.valueOf(weekProfileStatus.name()));
+                    } catch (NoboDataException nde) {
+                        logger.error("Failed getting current week profile status", nde);
+                    }    
+                }
+            }
         }
 
         updateProperty("name", zone.getName());
@@ -91,23 +97,24 @@ public class ZoneHandler extends BaseThingHandler {
     public void handleCommand(ChannelUID channelUID, Command command) {
         if (command instanceof RefreshType) {
             logger.debug("Refreshing channel {}", channelUID);
-            Bridge noboHub = getBridge();
-            NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
 
             if (null != id) {
-                Integer realId = id;
-                Zone zone = hubHandler.getZone(realId);
+                Zone zone = getZone();
                 if (null == zone) {
                     logger.error("Could not find Zone with id {} for channel {}", id, channelUID);
                     updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.GONE);
                 } else {
                     onUpdate(zone);
-                    WeekProfile weekProfile = hubHandler.getWeekProfile(zone.getActiveWeekProfileId());
-                    if (weekProfile != null) {
-                        String weekProfileName = weekProfile.getName(); 
-                        if (weekProfileName != null) {
-                            StringType weekProfileValue = StringType.valueOf(weekProfileName);
-                            updateState(CHANNEL_ZONE_WEEK_PROFILE_NAME, weekProfileValue);
+                    Bridge noboHub = getBridge();
+                    if (null != noboHub) {
+                        NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
+                        if (null != hubHandler) {
+                            WeekProfile weekProfile = hubHandler.getWeekProfile(zone.getActiveWeekProfileId());
+                            if (null != weekProfile) {
+                                String weekProfileName = weekProfile.getName(); 
+                                StringType weekProfileValue = StringType.valueOf(weekProfileName);
+                                updateState(CHANNEL_ZONE_WEEK_PROFILE_NAME, weekProfileValue);
+                            }
                         }
                     }
                 }
@@ -156,19 +163,24 @@ public class ZoneHandler extends BaseThingHandler {
 
     private void sendCommand(String command) {
         Bridge noboHub = getBridge();
-        NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
-        hubHandler.sendCommand(command);
+        if (null != noboHub) {
+            NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
+            if (null != hubHandler) {
+                hubHandler.sendCommand(command);    
+            }
+        }
     }
 
     private @Nullable Zone getZone() {
         Bridge noboHub = getBridge();
-        NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
-
-        if (null == id) {
-            return null;
+        if (null != noboHub) {
+            NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
+            if (null != hubHandler && null != id) {
+                Integer zid = Helpers.castToNonNull(id, "id");
+                return hubHandler.getZone(zid);
+            }
         }
 
-        Integer zid = id;
-        return hubHandler.getZone(zid);
+        return null;
     }
 }

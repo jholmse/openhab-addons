@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.nobohub.internal.Helpers;
 import org.openhab.binding.nobohub.internal.NoboHubBindingConstants;
 import org.openhab.binding.nobohub.internal.NoboHubBridgeHandler;
 import org.openhab.binding.nobohub.model.Hub;
@@ -139,7 +140,12 @@ public class HubConnection {
     }
 
     public boolean isConnected() {
-        return hubConnection != null && hubConnection.isConnected();
+        if (hubConnection != null) {
+            Socket conn = Helpers.castToNonNull(hubConnection, "hubConnection");
+            return conn.isConnected();
+        }
+
+        return false;
     }
 
     public void processReads(Duration timeout) throws NoboCommunicationException {
@@ -148,8 +154,9 @@ public class HubConnection {
                 throw new NoboCommunicationException("No connection to Hub");
             }
 
+            Socket conn = Helpers.castToNonNull(hubConnection, "hubConnection");
             logger.debug("Reading from Hub, waiting maximum {}", timeout);
-            hubConnection.setSoTimeout((int) timeout.toMillis());
+            conn.setSoTimeout((int) timeout.toMillis());
 
             try {
                 String line = readLine();
@@ -170,12 +177,17 @@ public class HubConnection {
 
     private @Nullable String readLine() throws NoboCommunicationException {
         try {
-            String line = in.readLine();
-            logger.debug("Reading '{}'", line);
-            return line;    
+            if (null != in) {
+                BufferedReader i = Helpers.castToNonNull(in, "in");
+                String line = i.readLine();
+                logger.debug("Reading '{}'", line);
+                return line;    
+            }
         } catch (IOException ioex) {
             throw new NoboCommunicationException("Failed reading from Nobø Hub", ioex);
         }
+
+        return null;
     }
 
     public void sendCommand(String command) {
@@ -183,16 +195,20 @@ public class HubConnection {
     }
 
     private void write(String s) {
-        logger.debug("Sending '{}'", s);
-        out.write(s);
-        out.flush();
+        if (null != out) {
+            logger.debug("Sending '{}'", s);
+            PrintWriter o = Helpers.castToNonNull(out, "out");
+            o.write(s);
+            o.flush();
+        }
     }
 
     private void connectSocket() throws NoboCommunicationException {
         try {
-            hubConnection = new Socket(host, NoboHubBindingConstants.NOBO_HUB_TCP_PORT);
-            out = new PrintWriter(hubConnection.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(hubConnection.getInputStream()));    
+            Socket conn = new Socket(host, NoboHubBindingConstants.NOBO_HUB_TCP_PORT);
+            out = new PrintWriter(conn.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(conn.getInputStream()));    
+            hubConnection = conn;
         } catch (IOException ioex) {
             throw new NoboCommunicationException(String.format("Failed connecting to Nobø Hub at %s", host.getHostName()), ioex);
         }
@@ -201,15 +217,15 @@ public class HubConnection {
     public void disconnect() throws NoboCommunicationException {
         try {
             if (out != null) {
-                out.close();
+                Helpers.castToNonNull(out, "out").close();
             }
 
             if (in != null) {
-                in.close();
+                Helpers.castToNonNull(in, "in").close();
             }
 
             if (hubConnection != null) {
-                hubConnection.close();
+                Helpers.castToNonNull(hubConnection, "hubConnection").close();
             }
         } catch (IOException ioex) {
             throw new NoboCommunicationException("Error disconnecting from Hub", ioex);
