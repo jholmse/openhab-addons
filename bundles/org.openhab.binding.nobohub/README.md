@@ -14,9 +14,7 @@ This binding is tested with the following devices:
 
 TODO:
 
-* Spamming handshake
 * G00 every 10 mins?
-* Move models under internal directory
 * Unit tests of handler/autdetect classes
 
 ## Supported Things

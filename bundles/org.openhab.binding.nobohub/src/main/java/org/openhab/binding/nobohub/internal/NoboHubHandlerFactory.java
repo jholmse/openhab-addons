@@ -85,12 +85,15 @@ public class NoboHubHandlerFactory extends BaseThingHandlerFactory {
 
     private synchronized void unregisterDiscoveryService(NoboHubBridgeHandler bridgeHandler) {
         try {
-            ServiceRegistration<?> serviceReg = this.discoveryServiceRegs.remove(bridgeHandler.getThing().getUID());
-            NoboThingDiscoveryService service = (NoboThingDiscoveryService) getBundleContext()
-                    .getService(serviceReg.getReference());
-            serviceReg.unregister();
-            if (service != null) {
-                service.deactivate();
+            @Nullable ServiceRegistration<?> serviceReg = this.discoveryServiceRegs.remove(bridgeHandler.getThing().getUID());
+            if (null != serviceReg) {
+                ServiceRegistration<?> sr = Helpers.castToNonNull(serviceReg, "serviceReg");
+                @Nullable NoboThingDiscoveryService service = (NoboThingDiscoveryService) getBundleContext().getService(sr.getReference());
+                sr.unregister();
+                if (service != null) {
+                    NoboThingDiscoveryService s = Helpers.castToNonNull(service, "service");
+                    s.deactivate();
+                }
             }
         } catch (IllegalArgumentException iae) {
             logger.error("Failed to unregister service", iae);

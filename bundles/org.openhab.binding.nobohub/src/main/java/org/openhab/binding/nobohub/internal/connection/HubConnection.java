@@ -148,6 +148,19 @@ public class HubConnection {
         return false;
     }
 
+    public boolean hasData() throws NoboCommunicationException {
+        if (null != in) {
+            BufferedReader i = Helpers.castToNonNull(in, "in");
+            try {
+                return i.ready();
+            } catch (IOException ioex) {
+                throw new NoboCommunicationException("Failed detecting if buffer has any data", ioex);
+            }
+        }
+
+        return false;
+    }
+
     public void processReads(Duration timeout) throws NoboCommunicationException {
         try {
             if (null == hubConnection) {

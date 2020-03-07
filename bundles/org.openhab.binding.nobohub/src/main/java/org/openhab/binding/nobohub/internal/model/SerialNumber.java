@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.nobohub.internal.Helpers;
 import org.openhab.binding.nobohub.internal.NoboHubBindingConstants;
 
 /**
@@ -77,8 +78,18 @@ public final class SerialNumber {
      */
     public String getComponentType() {
         String id = getTypeIdentifier();
-        return NoboHubBindingConstants.SERIALNUMBERS_FOR_TYPES.getOrDefault(id, "Unknown, please contact maintainer to add a new type for " + serialNumber);
+        String type = getTypeForSerialNumber(id);
+        if (null != type) {
+            String t = Helpers.castToNonNull(type, "type");
+            return t;
+        }
+
+        return "Unknown, please contact maintainer to add a new type for " + serialNumber;
     }
+
+    private @Nullable String getTypeForSerialNumber(String id) {
+        return NoboHubBindingConstants.SERIALNUMBERS_FOR_TYPES.get(id);
+    } 
 
     @java.lang.Override
     public String toString() {

@@ -212,8 +212,12 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
 
     private void onUpdate(Hub hub) {
         this.hub = hub;
-        Override activeOverride = overrideRegister.get(hub.getActiveOverrideId());
-        updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME, StringType.valueOf(activeOverride.getMode().name()));
+        Override activeOverride = getOverride(hub.getActiveOverrideId());
+
+        if (null != activeOverride) {
+            Override o = Helpers.castToNonNull(activeOverride, "activeOverride");
+            updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME, StringType.valueOf(o.getMode().name()));
+        }
 
         updateProperty("name", hub.getName());
         updateProperty("serialNumber", hub.getSerialNumber().toString());
@@ -319,15 +323,20 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
                 }
 
                 double temp = Double.parseDouble(parts[2]);
-                Component component = componentRegister.get(serialNumber);
-                
-                component.setTemperature(temp); 
-                refreshComponent(component);           
-                int zoneId = component.getTemperatureSensorForZoneId();    
-                if (zoneId >= 0) {
-                    Zone zone = zoneRegister.get(zoneId);
-                    zone.setTemperature(temp);
-                    refreshZone(zone);
+                Component component = getComponent(serialNumber);                
+                if (null != component) {
+                    Component c = Helpers.castToNonNull(component, "component");
+                    c.setTemperature(temp); 
+                    refreshComponent(c);           
+                    int zoneId = c.getTemperatureSensorForZoneId();    
+                    if (zoneId >= 0) {
+                        Zone zone = getZone(zoneId);
+                        if (null != zone) {
+                            Zone z = Helpers.castToNonNull(zone, "zone");
+                            z.setTemperature(temp);
+                            refreshZone(z);    
+                        }
+                    }
                 }
             } catch (NumberFormatException nfe) {
                 throw new NoboDataException(String.format("Failed to parse temperature %s: %s", parts[2], nfe.getMessage()), nfe);
@@ -354,6 +363,10 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
 
     public @Nullable Component getComponent(SerialNumber serialNumber) {
         return componentRegister.get(serialNumber);
+    }
+
+    public @Nullable Override getOverride(Integer id) {
+        return overrideRegister.get(id);
     }
 
     public void sendCommand(String command) {
