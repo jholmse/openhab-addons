@@ -13,8 +13,10 @@
 package org.openhab.binding.nobohub.internal.connection;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.nobohub.internal.NoboHubBindingConstants;
 import org.openhab.binding.nobohub.internal.model.NoboCommunicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +33,14 @@ public class HubCommunicationThread extends Thread {
 
     private final HubConnection hubConnection;
     private final Duration timeout;
+    private LocalDateTime lastTimeFullScan;
 
     private volatile boolean stopped = false;
 
     public HubCommunicationThread(HubConnection hubConnection, Duration timeout) {
         this.hubConnection = hubConnection;
         this.timeout = timeout;
+        this.lastTimeFullScan = LocalDateTime.now();
     }
 
     public void stopNow() {
@@ -47,7 +51,18 @@ public class HubCommunicationThread extends Thread {
     public void run() {
         while (!stopped) {
             try {
-                hubConnection.handshake();
+                if (hubConnection.hasData()) {
+                    hubConnection.processReads(timeout);
+                }
+
+                if (LocalDateTime.now().isAfter(lastTimeFullScan.plus(NoboHubBindingConstants.TIME_BETWEEN_FULL_SCANS))) {
+                    hubConnection.refreshAll();
+                    lastTimeFullScan = LocalDateTime.now();
+                }
+                else {
+                    hubConnection.handshake();
+                }
+
                 hubConnection.processReads(timeout);
             } catch (NoboCommunicationException nce) {
                 logger.error("Communication error with Hub", nce);

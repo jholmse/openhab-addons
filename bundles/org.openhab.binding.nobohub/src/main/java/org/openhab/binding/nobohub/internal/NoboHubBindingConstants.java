@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.nobohub.internal;
 
+import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,6 +40,8 @@ public class NoboHubBindingConstants {
     public static final String VENDOR = "Glen Dimplex Nobø";
 
     public static final int NOBO_HUB_TCP_PORT = 27779;
+
+    public static final Duration TIME_BETWEEN_FULL_SCANS = Duration.ofMinutes(10);
 
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_HUB = new ThingTypeUID(BINDING_ID, "nobohub");

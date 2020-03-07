@@ -14,7 +14,6 @@ This binding is tested with the following devices:
 
 TODO:
 
-* G00 every 10 mins?
 * Unit tests of handler/autdetect classes
 
 ## Supported Things
@@ -72,3 +71,14 @@ Not all devices report this.
 
 The author has just used the Paper UI to configure the system. If anybody has example file that can be included 
 here, please send it to the author.
+
+## Bugs and logging
+
+If you find any bugs or unwanted behaviour, please contact the maintainer. To help the maintainer it would be great
+if you could send logs with a description of what is wrong. To turn on logging, go to the Keraf console and run
+
+   log:set DEBUG org.openhab.binding.nobohub
+
+To see the log:
+
+   log:tail
