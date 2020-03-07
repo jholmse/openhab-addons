@@ -27,8 +27,8 @@ import org.eclipse.smarthome.config.discovery.DiscoveryResultBuilder;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.openhab.binding.nobohub.internal.NoboHubBridgeHandler;
-import org.openhab.binding.nobohub.model.Component;
-import org.openhab.binding.nobohub.model.Zone;
+import org.openhab.binding.nobohub.internal.model.Component;
+import org.openhab.binding.nobohub.internal.model.Zone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

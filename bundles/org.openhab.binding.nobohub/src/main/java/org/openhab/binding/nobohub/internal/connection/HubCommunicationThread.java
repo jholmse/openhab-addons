@@ -15,7 +15,7 @@ package org.openhab.binding.nobohub.internal.connection;
 import java.time.Duration;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.nobohub.model.NoboCommunicationException;
+import org.openhab.binding.nobohub.internal.model.NoboCommunicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

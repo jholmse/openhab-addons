@@ -28,11 +28,11 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nobohub.internal.Helpers;
 import org.openhab.binding.nobohub.internal.NoboHubBindingConstants;
 import org.openhab.binding.nobohub.internal.NoboHubBridgeHandler;
-import org.openhab.binding.nobohub.model.Hub;
-import org.openhab.binding.nobohub.model.NoboCommunicationException;
-import org.openhab.binding.nobohub.model.NoboDataException;
-import org.openhab.binding.nobohub.model.Override;
-import org.openhab.binding.nobohub.model.OverrideMode;
+import org.openhab.binding.nobohub.internal.model.Hub;
+import org.openhab.binding.nobohub.internal.model.NoboCommunicationException;
+import org.openhab.binding.nobohub.internal.model.NoboDataException;
+import org.openhab.binding.nobohub.internal.model.Override;
+import org.openhab.binding.nobohub.internal.model.OverrideMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

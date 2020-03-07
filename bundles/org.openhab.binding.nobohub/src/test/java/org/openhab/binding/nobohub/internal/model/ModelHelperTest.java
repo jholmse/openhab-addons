@@ -12,7 +12,7 @@
  * 
  * @author Jørgen Austvik
  */
-package org.openhab.binding.nobohub.model;
+package org.openhab.binding.nobohub.internal.model;
 
 import static org.junit.Assert.assertEquals;
 

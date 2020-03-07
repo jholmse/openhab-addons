@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.nobohub.model;
+package org.openhab.binding.nobohub.internal.model;
 
 import static org.junit.Assert.assertEquals;
 

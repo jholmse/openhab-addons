@@ -10,32 +10,34 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.nobohub.model;
+package org.openhab.binding.nobohub.internal.model;
 
 /**
- * The target of the {@link Override}. What it applies to.
+ * The type of the {@link Override}. How long does it last.
  * 
  * @author Jørgen Austvik - Initial contribution
  */
-public enum OverrideTarget {
+public enum OverrideType {
     
-    HUB(0),
-    ZONE(1),
-    COMPONENT(2);
+    NOW(0),
+    TIMER(1),
+    FROM_TO(2),
+    CONSTANT(3);
 
     private int numValue;
 
-    private OverrideTarget(int numValue) {
+    private OverrideType(int numValue) {
         this.numValue = numValue;
     }
 
-    public static OverrideTarget getByNumber(int value) throws NoboDataException
+    public static OverrideType getByNumber(int value) throws NoboDataException
     {
         switch (value) {
-            case 0: return HUB;
-            case 1: return ZONE;
-            case 2: return COMPONENT;
-            default: throw new NoboDataException(String.format("Unknown override target %d", value));
+            case 0: return NOW;
+            case 1: return TIMER;
+            case 2: return FROM_TO;
+            case 3: return CONSTANT;
+            default: throw new NoboDataException(String.format("Unknown override type %d", value));
         }
     }
 

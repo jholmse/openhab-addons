@@ -28,10 +28,10 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
-import org.openhab.binding.nobohub.model.NoboDataException;
-import org.openhab.binding.nobohub.model.WeekProfile;
-import org.openhab.binding.nobohub.model.WeekProfileStatus;
-import org.openhab.binding.nobohub.model.Zone;
+import org.openhab.binding.nobohub.internal.model.NoboDataException;
+import org.openhab.binding.nobohub.internal.model.WeekProfile;
+import org.openhab.binding.nobohub.internal.model.WeekProfileStatus;
+import org.openhab.binding.nobohub.internal.model.Zone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

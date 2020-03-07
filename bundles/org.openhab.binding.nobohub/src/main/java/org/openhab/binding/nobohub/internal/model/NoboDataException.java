@@ -10,25 +10,26 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.nobohub.model;
+package org.openhab.binding.nobohub.internal.model;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Exception thrown when failing to communicate with the hub.
+ * Exception thrown when the data received from the hub has unexpected format.
  * 
  * @author Jørgen Austvik - Initial contribution
  */
 @NonNullByDefault
-public class NoboCommunicationException extends Exception {
+public class NoboDataException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    public NoboCommunicationException(String message) {
+    public NoboDataException(String message) {
         super(message);
     }
 
-    public NoboCommunicationException(String message, Throwable cause) {
-        super(message, cause);
+    public NoboDataException(String message, Throwable parent) {
+        super(message, parent);
     }
+
 }

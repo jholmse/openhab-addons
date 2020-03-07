@@ -10,34 +10,32 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.nobohub.model;
+package org.openhab.binding.nobohub.internal.model;
 
 /**
- * The status of the {@link WeekProfile}. What the value is in the week profile.
+ * The target of the {@link Override}. What it applies to.
  * 
  * @author Jørgen Austvik - Initial contribution
  */
-public enum WeekProfileStatus {
-
-    ECO(0),
-    COMFORT(1),
-    AWAY(2),
-    OFF(3);
+public enum OverrideTarget {
+    
+    HUB(0),
+    ZONE(1),
+    COMPONENT(2);
 
     private int numValue;
 
-    private WeekProfileStatus(int numValue) {
+    private OverrideTarget(int numValue) {
         this.numValue = numValue;
     }
 
-    public static WeekProfileStatus getByNumber(int value) throws NoboDataException
+    public static OverrideTarget getByNumber(int value) throws NoboDataException
     {
         switch (value) {
-            case 0: return ECO;
-            case 1: return COMFORT;
-            case 2: return AWAY;
-            case 3: return OFF;
-            default: throw new NoboDataException(String.format("Unknown week profile status  %d", value));
+            case 0: return HUB;
+            case 1: return ZONE;
+            case 2: return COMPONENT;
+            default: throw new NoboDataException(String.format("Unknown override target %d", value));
         }
     }
 

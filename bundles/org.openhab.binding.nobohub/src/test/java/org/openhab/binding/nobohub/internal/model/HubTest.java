@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.nobohub.model;
+package org.openhab.binding.nobohub.internal.model;
 
 import static org.junit.Assert.assertEquals;
 
@@ -57,5 +57,12 @@ public class HubTest {
     public void testGenerateU03() throws NoboDataException {
         Hub hub = Hub.fromH05("V03 102000092118 My Eco Hub 2880 14 114 11123610_rev._1 20190426");
         assertEquals("U03 102000092118 My Eco Hub 2880 14 114 11123610_rev._1 20190426", hub.generateCommandString("U03"));
+    }
+
+    @Test
+    public void testCanChangeOverride() throws NoboDataException {
+        Hub hub = Hub.fromH05("V03 102000092118 My Eco Hub 2880 14 114 11123610_rev._1 20190426");
+        hub.setActiveOverrideId(123);
+        assertEquals("U03 102000092118 My Eco Hub 2880 123 114 11123610_rev._1 20190426", hub.generateCommandString("U03"));
     }
 }

@@ -25,9 +25,9 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
-import org.openhab.binding.nobohub.model.Component;
-import org.openhab.binding.nobohub.model.SerialNumber;
-import org.openhab.binding.nobohub.model.Zone;
+import org.openhab.binding.nobohub.internal.model.Component;
+import org.openhab.binding.nobohub.internal.model.SerialNumber;
+import org.openhab.binding.nobohub.internal.model.Zone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
