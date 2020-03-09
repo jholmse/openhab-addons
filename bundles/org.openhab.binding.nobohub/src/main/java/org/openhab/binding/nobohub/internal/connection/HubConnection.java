@@ -71,7 +71,7 @@ public class HubConnection {
 
         String hello = String.format("HELLO %s %s %s\r", NoboHubBindingConstants.API_VERSION, serialNumber, getDateString());
         write(hello);
-        String helloRes = readLine();
+        @Nullable String helloRes = readLine();
         if (null == helloRes || !helloRes.startsWith("HELLO")) {
             if (helloRes != null && helloRes.startsWith("REJECT")) {
                 String reject[] = helloRes.split(" ", 2);
@@ -82,7 +82,7 @@ public class HubConnection {
         }
 
         write("HANDSHAKE\r");
-        String handshakeRes = readLine();
+        @Nullable String handshakeRes = readLine();
         if (null == handshakeRes || !handshakeRes.startsWith("HANDSHAKE")) {
             throw new NoboCommunicationException(String.format("Hub rejects handshake"));
         }
@@ -106,15 +106,18 @@ public class HubConnection {
 
         Override override = Override.fromMode(nextMode, LocalDateTime.now());
         sendCommand(override.generateCommandString("A03"));
-        String line = "";
+        @Nullable String line = "";
         while (line != null && !line.startsWith("B03")) {
             line = readLine();
             hubHandler.receivedData(line);
         }
 
-        Override newOverride = Override.fromH04(line);
-        hub.setActiveOverrideId(newOverride.getId());
-        sendCommand(hub.generateCommandString("U03"));        
+        if (null != line) {
+            String l = Helpers.castToNonNull(line, "line");
+            Override newOverride = Override.fromH04(l);
+            hub.setActiveOverrideId(newOverride.getId());
+            sendCommand(hub.generateCommandString("U03"));        
+        }
     }
 
     public void refreshAll() throws NoboCommunicationException {
@@ -126,16 +129,12 @@ public class HubConnection {
     }
 
     private void refreshAllNoReconnect() throws NoboCommunicationException {
-        if (!isConnected()) {
-            connect();
-        } else {
-            write("G00\r");
+        write("G00\r");
 
-            String line = "";
-            while (line != null && !line.startsWith("H05")) {
-                line = readLine();
-                hubHandler.receivedData(line);
-            }
+        @Nullable String line = "";
+        while (line != null && !line.startsWith("H05")) {
+            line = readLine();
+            hubHandler.receivedData(line);
         }
     }
 
@@ -172,7 +171,7 @@ public class HubConnection {
             conn.setSoTimeout((int) timeout.toMillis());
 
             try {
-                String line = readLine();
+                @Nullable String line = readLine();
                 if (line != null && line.startsWith("HANDSHAKE")) {
                     line = readLine();
                 }

@@ -34,6 +34,7 @@ public class HubCommunicationThread extends Thread {
     private final HubConnection hubConnection;
     private final Duration timeout;
     private LocalDateTime lastTimeFullScan;
+    private LocalDateTime lastTimeReadStart;
 
     private volatile boolean stopped = false;
 
@@ -41,6 +42,7 @@ public class HubCommunicationThread extends Thread {
         this.hubConnection = hubConnection;
         this.timeout = timeout;
         this.lastTimeFullScan = LocalDateTime.now();
+        this.lastTimeReadStart = LocalDateTime.now();
     }
 
     public void stopNow() {
@@ -63,9 +65,23 @@ public class HubCommunicationThread extends Thread {
                     hubConnection.handshake();
                 }
 
+                lastTimeReadStart = LocalDateTime.now();
                 hubConnection.processReads(timeout);
             } catch (NoboCommunicationException nce) {
                 logger.error("Communication error with Hub", nce);
+                try {
+                    Duration readTime = Duration.between(LocalDateTime.now(), lastTimeReadStart);
+                    Thread.sleep(NoboHubBindingConstants.TIME_BETWEEN_RETRIES_ON_ERROR.minus(readTime).toMillis());
+                    if (!hubConnection.isConnected()) {
+                        try {
+                            hubConnection.connect();
+                        } catch (NoboCommunicationException nce2) {
+                            logger.error("Failed to reconnect connection", nce2);
+                        }
+                    }
+                } catch (InterruptedException ie) {
+                    logger.debug("Interrupted from sleep after error");
+                }
             }    
         }
 

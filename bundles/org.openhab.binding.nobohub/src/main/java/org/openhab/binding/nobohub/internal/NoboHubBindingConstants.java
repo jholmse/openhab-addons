@@ -42,6 +42,7 @@ public class NoboHubBindingConstants {
     public static final int NOBO_HUB_TCP_PORT = 27779;
 
     public static final Duration TIME_BETWEEN_FULL_SCANS = Duration.ofMinutes(10);
+    public static final Duration TIME_BETWEEN_RETRIES_ON_ERROR = Duration.ofSeconds(10);
 
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_HUB = new ThingTypeUID(BINDING_ID, "nobohub");
