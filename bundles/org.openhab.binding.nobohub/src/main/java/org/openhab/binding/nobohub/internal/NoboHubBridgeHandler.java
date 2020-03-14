@@ -199,15 +199,15 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             ht.stopNow();
         }
     }
-    
+
     @java.lang.Override
     public void childHandlerInitialized(ThingHandler handler, Thing thing) {
-        logger.info("Adding thing: {}", thing);
+        logger.info("Adding thing: {}", thing.getLabel());
     }
 
     @java.lang.Override
     public void childHandlerDisposed(ThingHandler handler, Thing thing) {
-        logger.info("Disposing thing: {}", thing);
+        logger.info("Disposing thing: {}", thing.getLabel());
     }
 
     private void onUpdate(Hub hub) {
@@ -323,18 +323,18 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
                 }
 
                 double temp = Double.parseDouble(parts[2]);
-                Component component = getComponent(serialNumber);                
+                Component component = getComponent(serialNumber);
                 if (null != component) {
                     Component c = Helpers.castToNonNull(component, "component");
-                    c.setTemperature(temp); 
-                    refreshComponent(c);           
-                    int zoneId = c.getTemperatureSensorForZoneId();    
+                    c.setTemperature(temp);
+                    refreshComponent(c);
+                    int zoneId = c.getTemperatureSensorForZoneId();
                     if (zoneId >= 0) {
                         Zone zone = getZone(zoneId);
                         if (null != zone) {
                             Zone z = Helpers.castToNonNull(zone, "zone");
                             z.setTemperature(temp);
-                            refreshZone(z);    
+                            refreshZone(z);
                         }
                     }
                 }
@@ -383,7 +383,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
                 ZoneHandler handler = (ZoneHandler) thing.getHandler();
                 if (handler != null && handler.getZoneId() == zone.getId()) {
                     handler.onUpdate(zone);
-                }    
+                }
             }
         });
     }
@@ -396,7 +396,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
                     SerialNumber handlerSerial = handler.getSerialNumber();
                     if (handlerSerial != null && component.getSerialNumber().equals(handlerSerial)) {
                         handler.onUpdate(component);
-                    }        
+                    }
                 }
             }
         });
