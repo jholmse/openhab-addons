@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Connection to the Nobø Hub (Socket wrapper).
- * 
+ *
  * @author Jørgen Austvik - Initial contribution
  */
 @NonNullByDefault
@@ -116,7 +116,7 @@ public class HubConnection {
             String l = Helpers.castToNonNull(line, "line");
             Override newOverride = Override.fromH04(l);
             hub.setActiveOverrideId(newOverride.getId());
-            sendCommand(hub.generateCommandString("U03"));        
+            sendCommand(hub.generateCommandString("U03"));
         }
     }
 
@@ -175,7 +175,7 @@ public class HubConnection {
                 if (line != null && line.startsWith("HANDSHAKE")) {
                     line = readLine();
                 }
-    
+
                 hubHandler.receivedData(line);
             } catch (NoboCommunicationException nce) {
                 if (!(nce.getCause() instanceof SocketTimeoutException)) {
@@ -193,7 +193,7 @@ public class HubConnection {
                 BufferedReader i = Helpers.castToNonNull(in, "in");
                 String line = i.readLine();
                 logger.debug("Reading '{}'", line);
-                return line;    
+                return line;
             }
         } catch (IOException ioex) {
             throw new NoboCommunicationException("Failed reading from Nobø Hub", ioex);
@@ -219,7 +219,7 @@ public class HubConnection {
         try {
             Socket conn = new Socket(host, NoboHubBindingConstants.NOBO_HUB_TCP_PORT);
             out = new PrintWriter(conn.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(conn.getInputStream()));    
+            in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             hubConnection = conn;
         } catch (IOException ioex) {
             throw new NoboCommunicationException(String.format("Failed connecting to Nobø Hub at %s", host.getHostName()), ioex);
@@ -242,6 +242,11 @@ public class HubConnection {
         } catch (IOException ioex) {
             throw new NoboCommunicationException("Error disconnecting from Hub", ioex);
         }
+    }
+
+    public void hardReconnect() throws NoboCommunicationException {
+        disconnect();
+        connectSocket();
     }
 
     private String getDateString() {

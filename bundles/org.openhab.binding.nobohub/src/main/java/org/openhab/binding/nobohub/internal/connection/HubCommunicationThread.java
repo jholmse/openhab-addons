@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Thread that reads from the Nobø Hub and sends HANDSHAKEs to keep the connection open.
- * 
+ *
  * @author Jørgen Austvik - Initial contribution
  */
 @NonNullByDefault
@@ -72,17 +72,15 @@ public class HubCommunicationThread extends Thread {
                 try {
                     Duration readTime = Duration.between(LocalDateTime.now(), lastTimeReadStart);
                     Thread.sleep(NoboHubBindingConstants.TIME_BETWEEN_RETRIES_ON_ERROR.minus(readTime).toMillis());
-                    if (!hubConnection.isConnected()) {
-                        try {
-                            hubConnection.connect();
-                        } catch (NoboCommunicationException nce2) {
-                            logger.error("Failed to reconnect connection", nce2);
-                        }
+                    try {
+                        hubConnection.hardReconnect();
+                    } catch (NoboCommunicationException nce2) {
+                        logger.error("Failed to reconnect connection", nce2);
                     }
                 } catch (InterruptedException ie) {
                     logger.debug("Interrupted from sleep after error");
                 }
-            }    
+            }
         }
 
         try {
@@ -91,9 +89,9 @@ public class HubCommunicationThread extends Thread {
             }
         } catch (NoboCommunicationException nce) {
             logger.error("Error disconnecting from Hub", nce);
-        }    
+        }
     }
-    
+
     public HubConnection getConnection() {
         return hubConnection;
     }
