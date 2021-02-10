@@ -219,6 +219,11 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME, StringType.valueOf(o.getMode().name()));
         }
 
+        // Update all zones to set online status and update profile name from weekProfileRegister
+        for (Zone zone : zoneRegister.values()) {
+            refreshZone(zone);
+        }
+
         updateProperty("name", hub.getName());
         updateProperty("serialNumber", hub.getSerialNumber().toString());
         updateProperty("softwareVersion", hub.getSoftwareVersion());
