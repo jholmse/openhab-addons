@@ -102,12 +102,15 @@ public class NoboThingDiscoveryService extends AbstractDiscoveryService {
             if (zoneName != null) {
                 properties.put("zone", zoneName);
             }
-        
-            String tempForZoneName = getZoneName(component.getTemperatureSensorForZoneId());
-            if (tempForZoneName != null) {
-                properties.put("temperatureSensorForZone", tempForZoneName);
+
+            int zoneId = component.getTemperatureSensorForZoneId();
+            if (zoneId >= 0) {
+                String tempForZoneName = getZoneName(zoneId);
+                if (tempForZoneName != null) {
+                    properties.put("temperatureSensorForZone", tempForZoneName);
+                }
             }
-        
+
             logger.debug("Adding device {} to inbox", thingId);
             DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingId).withBridge(bridge)
                     .withLabel(label).withProperties(properties).withRepresentationProperty("serialNumber").build();
