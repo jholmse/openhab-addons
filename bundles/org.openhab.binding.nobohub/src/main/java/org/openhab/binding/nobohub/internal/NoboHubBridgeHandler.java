@@ -17,6 +17,7 @@ import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.*;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -217,6 +218,23 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         if (null != activeOverride) {
             Override o = Helpers.castToNonNull(activeOverride, "activeOverride");
             updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME, StringType.valueOf(o.getMode().name()));
+        }
+
+
+        if(weekProfileRegister.size() > 0){
+            String mapOfWeekProfilesToString = weekProfileRegister.values()
+                    .stream()
+                    .map(weekProfile -> weekProfile.getId() + "=\"" + weekProfile.getName() + "\"")
+                    .collect(Collectors.joining(", "));
+            logger.info("Found profiles: {}", mapOfWeekProfilesToString);
+
+            Bridge noboHub = getBridge();
+            if (null != noboHub) {
+                NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
+                if (hubHandler != null) {
+                    updateState(NoboHubBindingConstants.CHANNEL_HUB_WEEK_PROFILES, StringType.valueOf(mapOfWeekProfilesToString));
+                }
+            }
         }
 
         // Update all zones to set online status and update profile name from weekProfileRegister

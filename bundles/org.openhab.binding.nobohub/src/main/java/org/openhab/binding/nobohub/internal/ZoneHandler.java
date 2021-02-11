@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Shows information about a named Zone in the Nobø Hub.
- * 
+ *
  * @author Jørgen Austvik - Initial contribution
  */
 @NonNullByDefault
@@ -72,13 +72,14 @@ public class ZoneHandler extends BaseThingHandler {
             if (hubHandler != null) {
                 WeekProfile weekProfile = hubHandler.getWeekProfile(activeWeekProfileId);
                 if (null != weekProfile) {
-                    updateState(CHANNEL_ZONE_WEEK_PROFILE_NAME,  StringType.valueOf(weekProfile.getName()));
+                    updateState(CHANNEL_ZONE_ACTIVE_WEEK_PROFILE_NAME, StringType.valueOf(weekProfile.getName()));
+                    updateState(CHANNEL_ZONE_ACTIVE_WEEK_PROFILE, DecimalType.valueOf(String.valueOf(weekProfile.getId())));
                     try {
                         WeekProfileStatus weekProfileStatus = weekProfile.getStatusAt(LocalDateTime.now());
                         updateState(CHANNEL_ZONE_CALCULATED_WEEK_PROFILE_STATUS, StringType.valueOf(weekProfileStatus.name()));
                     } catch (NoboDataException nde) {
                         logger.error("Failed getting current week profile status", nde);
-                    }    
+                    }
                 }
             }
         }
@@ -87,7 +88,7 @@ public class ZoneHandler extends BaseThingHandler {
         updateProperty("id", Integer.toString(zone.getId()));
     }
 
-    @Override 
+    @Override
     public void initialize() {
         this.id = getConfigAs(ZoneConfiguration.class).id;
         updateStatus(ThingStatus.ONLINE);
@@ -111,9 +112,9 @@ public class ZoneHandler extends BaseThingHandler {
                         if (null != hubHandler) {
                             WeekProfile weekProfile = hubHandler.getWeekProfile(zone.getActiveWeekProfileId());
                             if (null != weekProfile) {
-                                String weekProfileName = weekProfile.getName(); 
+                                String weekProfileName = weekProfile.getName();
                                 StringType weekProfileValue = StringType.valueOf(weekProfileName);
-                                updateState(CHANNEL_ZONE_WEEK_PROFILE_NAME, weekProfileValue);
+                                updateState(CHANNEL_ZONE_ACTIVE_WEEK_PROFILE_NAME, weekProfileValue);
                             }
                         }
                     }
@@ -134,7 +135,7 @@ public class ZoneHandler extends BaseThingHandler {
                     logger.debug("Set comfort temp for zone {} to {}", zone.getName(), comfortTemp.doubleValue());
                     zone.setComfortTemperature(comfortTemp.intValue());
                     sendCommand(zone.generateCommandString("U00"));
-                }    
+                }
             }
 
             return;
@@ -147,6 +148,19 @@ public class ZoneHandler extends BaseThingHandler {
                     DecimalType ecoTemp = (DecimalType) command;
                     logger.debug("Set eco temp for zone {} to {}", zone.getName(), ecoTemp.doubleValue());
                     zone.setEcoTemperature(ecoTemp.intValue());
+                    sendCommand(zone.generateCommandString("U00"));
+                }
+            }
+            return;
+        }
+
+        if (CHANNEL_ZONE_ACTIVE_WEEK_PROFILE.equals(channelUID.getId())) {
+            Zone zone = getZone();
+            if (zone != null) {
+                if (command instanceof DecimalType) {
+                    DecimalType weekProfileId = (DecimalType) command;
+                    logger.debug("Set week profile for zone {} to {}", zone.getName(), weekProfileId);
+                    zone.setWeekProfile(weekProfileId.intValue());
                     sendCommand(zone.generateCommandString("U00"));
                 }
             }
@@ -166,7 +180,7 @@ public class ZoneHandler extends BaseThingHandler {
         if (null != noboHub) {
             NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
             if (null != hubHandler) {
-                hubHandler.sendCommand(command);    
+                hubHandler.sendCommand(command);
             }
         }
     }

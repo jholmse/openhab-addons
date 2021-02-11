@@ -16,8 +16,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
- * A Zone is a spece that contains one or more {@link Component}s.
- * 
+ * A Zone is a spec that contains one or more {@link Component}s.
+ *
  * @author Jørgen Austvik - Initial contribution
  */
 @NonNullByDefault
@@ -25,7 +25,7 @@ public final class Zone {
 
     private final int id;
     private final String name;
-    private final int activeWeekProfileId;
+    private int activeWeekProfileId;
     private int comfortTemperature;
     private int ecoTemperature;
     private final boolean allowOverrides;
@@ -57,7 +57,7 @@ public final class Zone {
     }
 
     public String generateCommandString(final String command) {
-        return String.join(" ", 
+        return String.join(" ",
             command,
             Integer.toString(id),
             ModelHelper.toHubString(name),
@@ -106,5 +106,9 @@ public final class Zone {
 
     public void setEcoTemperature(int temp) {
         ecoTemperature = temp;
+    }
+
+    public void setWeekProfile(int weekProfileId) {
+        activeWeekProfileId = weekProfileId;
     }
 }
