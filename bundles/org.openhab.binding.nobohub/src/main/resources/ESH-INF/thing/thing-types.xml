@@ -45,7 +45,7 @@
 
 		<channels>
 			<channel id="activeWeekProfileName" typeId="activeWeekProfileName-channel-type" />
-			<channel id="activeWeekProfile" typeId="activeWeekProfileName-channel-type" />
+			<channel id="activeWeekProfile" typeId="activeWeekProfile-channel-type" />
 			<channel id="comfortTemperature" typeId="comfort-temperature-channel-type" />
 			<channel id="ecoTemperature" typeId="eco-temperature-channel-type" />
 			<channel id="currentTemperature" typeId="temperature-channel-type" />
