@@ -22,7 +22,7 @@ import org.junit.Test;
 
 /**
  * Unit tests for WeekProfile model object.
- * 
+ *
  * @author Jørgen Austvik - Initial contribution
  */
 @NonNullByDefault
@@ -59,6 +59,15 @@ public class WeekProfileTest {
         WeekProfile weekProfile = WeekProfile.fromH03("H03 1 Default 00000,00000,00001,00000,00000,00000,00000");
         WeekProfileStatus status = weekProfile.getStatusAt(WEDNESDAY);
         assertEquals(WeekProfileStatus.COMFORT, status);
+    }
+
+    @Test
+    public void testFindOffDayStatus() throws NoboDataException {
+        WeekProfile weekProfile = WeekProfile.fromH03("H03 2 Off 00004,00003,00004,00004,00004,00004,00003");
+        WeekProfileStatus statusWen = weekProfile.getStatusAt(WEDNESDAY);
+        assertEquals(WeekProfileStatus.OFF, statusWen);
+        WeekProfileStatus statusSat = weekProfile.getStatusAt(SUNDAY);
+        assertEquals(WeekProfileStatus.OFF, statusSat);
     }
 
     @Test

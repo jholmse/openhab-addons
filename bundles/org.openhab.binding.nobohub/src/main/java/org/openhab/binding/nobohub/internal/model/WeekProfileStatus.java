@@ -13,8 +13,11 @@
 package org.openhab.binding.nobohub.internal.model;
 
 /**
- * The status of the {@link WeekProfile}. What the value is in the week profile.
- * 
+ * The status of the {@link WeekProfile}. What the value is in the week profile. Status OFF is matched both to value 3
+ * and 4, while the documentation says 3, Hub with Hardware version 11123610_rev._1 and production date 20180305
+ * will send value 4 for OFF.
+ * compatibility.
+ *
  * @author Jørgen Austvik - Initial contribution
  */
 public enum WeekProfileStatus {
@@ -36,7 +39,9 @@ public enum WeekProfileStatus {
             case 0: return ECO;
             case 1: return COMFORT;
             case 2: return AWAY;
-            case 3: return OFF;
+            case 3:
+            case 4:
+                return OFF;
             default: throw new NoboDataException(String.format("Unknown week profile status  %d", value));
         }
     }
