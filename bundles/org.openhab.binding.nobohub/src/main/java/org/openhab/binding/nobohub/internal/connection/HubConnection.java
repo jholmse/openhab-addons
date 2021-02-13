@@ -23,6 +23,7 @@ import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.nobohub.internal.Helpers;
@@ -167,7 +168,7 @@ public class HubConnection {
             }
 
             Socket conn = Helpers.castToNonNull(hubConnection, "hubConnection");
-            logger.debug("Reading from Hub, waiting maximum {}", timeout);
+            logger.debug("Reading from Hub, waiting maximum {}", DurationFormatUtils.formatDuration(timeout.toMillis(), "H:mm:ss", true));
             conn.setSoTimeout((int) timeout.toMillis());
 
             try {
@@ -246,7 +247,7 @@ public class HubConnection {
 
     public void hardReconnect() throws NoboCommunicationException {
         disconnect();
-        connectSocket();
+        connect();
     }
 
     private String getDateString() {
