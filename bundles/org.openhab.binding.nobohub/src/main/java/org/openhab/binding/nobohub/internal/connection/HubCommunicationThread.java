@@ -73,6 +73,7 @@ public class HubCommunicationThread extends Thread {
                     Duration readTime = Duration.between(LocalDateTime.now(), lastTimeReadStart);
                     Thread.sleep(NoboHubBindingConstants.TIME_BETWEEN_RETRIES_ON_ERROR.minus(readTime).toMillis());
                     try {
+                        logger.debug("Trying to do a hard reconnect");
                         hubConnection.hardReconnect();
                     } catch (NoboCommunicationException nce2) {
                         logger.error("Failed to reconnect connection", nce2);

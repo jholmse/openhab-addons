@@ -59,9 +59,11 @@ public class NoboHubBindingConstants {
 
     // Hub
     public static final String CHANNEL_HUB_ACTIVE_OVERRIDE_NAME = "activeOverrideName";
+    public static final String CHANNEL_HUB_WEEK_PROFILES = "weekProfiles";
 
     // Zone
-    public static final String CHANNEL_ZONE_WEEK_PROFILE_NAME = "activeWeekProfile";
+    public static final String CHANNEL_ZONE_ACTIVE_WEEK_PROFILE_NAME = "activeWeekProfileName";
+    public static final String CHANNEL_ZONE_ACTIVE_WEEK_PROFILE = "activeWeekProfile";
     public static final String CHANNEL_ZONE_CALCULATED_WEEK_PROFILE_STATUS = "calculatedWeekProfileStatus";
     public static final String CHANNEL_ZONE_COMFORT_TEMPERATURE = "comfortTemperature";
     public static final String CHANNEL_ZONE_ECO_TEMPERATURE = "ecoTemperature";
@@ -83,26 +85,26 @@ public class NoboHubBindingConstants {
 
     // Mappings
 
-    public static final Map<String, String> REJECT_REASONS = Stream.of(new String[][] { 
-        { "0", "Client command set too old, run it in with debug logs and let the maintainer know" }, 
+    public static final Map<String, String> REJECT_REASONS = Stream.of(new String[][] {
+        { "0", "Client command set too old, run it in with debug logs and let the maintainer know" },
         { "1", "Hub serial number mismatch (should be 12 digits, if hub was autodetected, plase add the last three)" },
-        { "2", "Wrong number of arguments, run it in with debug logs and let the maintainer know" }, 
-        { "3", "Timestamp incorrectly formatted, run it in with debug logs and let the maintainer know" }, 
+        { "2", "Wrong number of arguments, run it in with debug logs and let the maintainer know" },
+        { "3", "Timestamp incorrectly formatted, run it in with debug logs and let the maintainer know" },
     }).collect(Collectors.collectingAndThen(
-        Collectors.toMap(data -> data[0], data -> data[1]), 
+        Collectors.toMap(data -> data[0], data -> data[1]),
         Collections::<String, String> unmodifiableMap));
 
     // Full list of units: http://help.nobo.no/skriver/?chapterid=344&chapterlanguageid=2
-    public static final Map<String, String> SERIALNUMBERS_FOR_TYPES = Stream.of(new String[][] { 
-            { "120", "RS-700" }, 
+    public static final Map<String, String> SERIALNUMBERS_FOR_TYPES = Stream.of(new String[][] {
+            { "120", "RS-700" },
             { "168", "NCU-2R" },
             { "184", "NCU-1R" },
             { "186", "NTD-4R" },
-            { "192", "TXF" }, 
-            { "198", "NCU-ER" }, 
-            { "210", "NTB-2R" }, 
-            { "234", "Nobø Switch" }, 
+            { "192", "TXF" },
+            { "198", "NCU-ER" },
+            { "210", "NTB-2R" },
+            { "234", "Nobø Switch" },
         }).collect(Collectors.collectingAndThen(
-            Collectors.toMap(data -> data[0], data -> data[1]), 
+            Collectors.toMap(data -> data[0], data -> data[1]),
             Collections::<String, String> unmodifiableMap));
 }
