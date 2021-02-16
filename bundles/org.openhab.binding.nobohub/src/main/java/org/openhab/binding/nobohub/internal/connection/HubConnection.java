@@ -55,8 +55,8 @@ public class HubConnection {
     private @Nullable PrintWriter out;
     private @Nullable BufferedReader in;
 
-
-    public HubConnection(String hostName, String serialNumber, NoboHubBridgeHandler hubHandler) throws NoboCommunicationException {
+    public HubConnection(String hostName, String serialNumber, NoboHubBridgeHandler hubHandler)
+            throws NoboCommunicationException {
         try {
             host = InetAddress.getByName(hostName);
         } catch (IOException ioex) {
@@ -70,20 +70,24 @@ public class HubConnection {
     public boolean connect() throws NoboCommunicationException {
         connectSocket();
 
-        String hello = String.format("HELLO %s %s %s\r", NoboHubBindingConstants.API_VERSION, serialNumber, getDateString());
+        String hello = String.format("HELLO %s %s %s\r", NoboHubBindingConstants.API_VERSION, serialNumber,
+                getDateString());
         write(hello);
-        @Nullable String helloRes = readLine();
+        @Nullable
+        String helloRes = readLine();
         if (null == helloRes || !helloRes.startsWith("HELLO")) {
             if (helloRes != null && helloRes.startsWith("REJECT")) {
                 String reject[] = helloRes.split(" ", 2);
-                throw new NoboCommunicationException(String.format("Hub rejects us with reason %s: %s", reject[1], NoboHubBindingConstants.REJECT_REASONS.get(reject[1])));
+                throw new NoboCommunicationException(String.format("Hub rejects us with reason %s: %s", reject[1],
+                        NoboHubBindingConstants.REJECT_REASONS.get(reject[1])));
             } else {
                 throw new NoboCommunicationException(String.format("Hub rejects us with unknown reason"));
             }
         }
 
         write("HANDSHAKE\r");
-        @Nullable String handshakeRes = readLine();
+        @Nullable
+        String handshakeRes = readLine();
         if (null == handshakeRes || !handshakeRes.startsWith("HANDSHAKE")) {
             throw new NoboCommunicationException(String.format("Hub rejects handshake"));
         }
@@ -107,7 +111,8 @@ public class HubConnection {
 
         Override override = Override.fromMode(nextMode, LocalDateTime.now());
         sendCommand(override.generateCommandString("A03"));
-        @Nullable String line = "";
+        @Nullable
+        String line = "";
         while (line != null && !line.startsWith("B03")) {
             line = readLine();
             hubHandler.receivedData(line);
@@ -132,7 +137,8 @@ public class HubConnection {
     private void refreshAllNoReconnect() throws NoboCommunicationException {
         write("G00\r");
 
-        @Nullable String line = "";
+        @Nullable
+        String line = "";
         while (line != null && !line.startsWith("H05")) {
             line = readLine();
             hubHandler.receivedData(line);
@@ -168,11 +174,13 @@ public class HubConnection {
             }
 
             Socket conn = Helpers.castToNonNull(hubConnection, "hubConnection");
-            logger.debug("Reading from Hub, waiting maximum {}", DurationFormatUtils.formatDuration(timeout.toMillis(), "H:mm:ss", true));
+            logger.debug("Reading from Hub, waiting maximum {}",
+                    DurationFormatUtils.formatDuration(timeout.toMillis(), "H:mm:ss", true));
             conn.setSoTimeout((int) timeout.toMillis());
 
             try {
-                @Nullable String line = readLine();
+                @Nullable
+                String line = readLine();
                 if (line != null && line.startsWith("HANDSHAKE")) {
                     line = readLine();
                 }
@@ -223,7 +231,8 @@ public class HubConnection {
             in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             hubConnection = conn;
         } catch (IOException ioex) {
-            throw new NoboCommunicationException(String.format("Failed connecting to Nobø Hub at %s", host.getHostName()), ioex);
+            throw new NoboCommunicationException(
+                    String.format("Failed connecting to Nobø Hub at %s", host.getHostName()), ioex);
         }
     }
 

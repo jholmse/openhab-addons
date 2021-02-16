@@ -155,7 +155,9 @@ both sets temperature level and profile.
 Get list of profile id's and names either from the logs or adding item Nobo_Hub_WeekProfiles to a sitemap. As the string
 can be quite long, using the logs are recommended. Now map the id="Profile name" to a switch og selection like this
 
+
 ### nobo.sitemap
+
 ```
 sitemap nobo label="Nobø " {
 
