@@ -53,6 +53,7 @@ hostName=10.0.0.10
 | channel             | type   | description                      |
 |---------------------|--------|----------------------------------|
 | activeOverrideName  | String | The name of the active override  |
+| weekProfiles        | String | Week profiles  |
 
 ### Zone
 
@@ -129,7 +130,7 @@ sitemap nobo label="Nobø " {
 ## Organize your setup
 
 Nobø Hub uses a combination of status types (Normal, Comfort, Eco, Away), profiles types (Comfort, Eco, Away, Off), 
-temperatures types (Comfort, Eco, Away), zones and overrides settings to organize and enable different features. 
+predfined temperature types (Comfort, Eco, Away), zones and override settings to organize and enable different features. 
 This makes it possible to control the heaters in many different scenarios and combinations. The following is a suggested
 way of organizing the binding with the Hub for a good level of control and flexibility.
 
@@ -153,7 +154,7 @@ Next set [Comfort|Eco] level for each zone to your requirements. For a more adva
 both sets temperature level and profile.
 
 Get list of profile id's and names either from the logs or adding item Nobo_Hub_WeekProfiles to a sitemap. As the string
-can be quite long, using the logs are recommended. Now map the id="Profile name" to a switch og selection like this
+can be quite long, using the logs are recommended. Now map the id="Profile name" to a switch or selection like this:
 
 
 ### nobo.sitemap
