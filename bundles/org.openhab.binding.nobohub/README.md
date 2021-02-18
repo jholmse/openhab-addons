@@ -50,10 +50,10 @@ hostName=10.0.0.10
 
 ### Hub
 
-| channel             | type   | description                      |
-|---------------------|--------|----------------------------------|
-| activeOverrideName  | String | The name of the active override  |
-| weekProfiles        | String | Week profiles  |
+| channel             | type   | description                                         |
+|---------------------|--------|-----------------------------------------------------|
+| activeOverrideName  | String | The name of the active override                     |
+| weekProfiles        | String | List of present week profiles (0="Default", 1="On") |
 
 ### Zone
 
