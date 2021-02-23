@@ -41,6 +41,7 @@ import org.openhab.binding.nobohub.internal.model.Hub;
 import org.openhab.binding.nobohub.internal.model.Override;
 import org.openhab.binding.nobohub.internal.model.OverrideMode;
 import org.openhab.binding.nobohub.internal.model.SerialNumber;
+import org.openhab.binding.nobohub.internal.model.Temperature;
 import org.openhab.binding.nobohub.internal.model.WeekProfile;
 import org.openhab.binding.nobohub.internal.model.Zone;
 import org.openhab.binding.nobohub.internal.model.NoboCommunicationException;
@@ -338,31 +339,21 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             Hub hub = Hub.fromH05(line);
             onUpdate(hub);
         } else if (line.startsWith("Y02")) {
-            String parts[] = line.split(" ", 3);
-            SerialNumber serialNumber = new SerialNumber(parts[1]);
-            try {
-                if (parts[2] == null) {
-                    throw new NoboDataException("Missing temperature data");
-                }
-
-                double temp = Double.parseDouble(parts[2]);
-                Component component = getComponent(serialNumber);
-                if (null != component) {
-                    Component c = Helpers.castToNonNull(component, "component");
-                    c.setTemperature(temp);
-                    refreshComponent(c);
-                    int zoneId = c.getTemperatureSensorForZoneId();
-                    if (zoneId >= 0) {
-                        Zone zone = getZone(zoneId);
-                        if (null != zone) {
-                            Zone z = Helpers.castToNonNull(zone, "zone");
-                            z.setTemperature(temp);
-                            refreshZone(z);
-                        }
+            Temperature temp = Temperature.fromY02(line);
+            Component component = getComponent(temp.getSerialNumber());
+            if (null != component) {
+                Component c = Helpers.castToNonNull(component, "component");
+                c.setTemperature(temp.getTemperature());
+                refreshComponent(c);
+                int zoneId = c.getTemperatureSensorForZoneId();
+                if (zoneId >= 0) {
+                    Zone zone = getZone(zoneId);
+                    if (null != zone) {
+                        Zone z = Helpers.castToNonNull(zone, "zone");
+                        z.setTemperature(temp.getTemperature());
+                        refreshZone(z);
                     }
                 }
-            } catch (NumberFormatException nfe) {
-                throw new NoboDataException(String.format("Failed to parse temperature %s: %s", parts[2], nfe.getMessage()), nfe);
             }
         } else if (line.startsWith("E00")) {
             logger.error("Error from Hub: {}", line);
