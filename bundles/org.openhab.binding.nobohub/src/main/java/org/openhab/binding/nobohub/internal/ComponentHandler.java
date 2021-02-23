@@ -51,8 +51,11 @@ public class ComponentHandler extends BaseThingHandler {
         updateStatus(ThingStatus.ONLINE);
 
         Double temp = component.getTemperature();
-        DecimalType currentTemperature = new DecimalType(temp);
-        updateState(CHANNEL_COMPONENT_CURRENT_TEMPERATURE, currentTemperature);
+
+        if (temp != Double.NaN) {
+            DecimalType currentTemperature = new DecimalType(temp);
+            updateState(CHANNEL_COMPONENT_CURRENT_TEMPERATURE, currentTemperature);
+        }
 
         updateProperty("serialNumber", component.getSerialNumber().toString());
         updateProperty("name", component.getName());
