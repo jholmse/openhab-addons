@@ -51,10 +51,13 @@ public class ComponentHandler extends BaseThingHandler {
         updateStatus(ThingStatus.ONLINE);
 
         Double temp = component.getTemperature();
-
-        if (temp != Double.NaN) {
-            DecimalType currentTemperature = new DecimalType(temp);
-            updateState(CHANNEL_COMPONENT_CURRENT_TEMPERATURE, currentTemperature);
+        if (temp != null && temp != Double.NaN) {
+            try {
+                DecimalType currentTemperature = new DecimalType(temp);
+                updateState(CHANNEL_COMPONENT_CURRENT_TEMPERATURE, currentTemperature);
+            } catch (NumberFormatException nfe) {
+                logger.debug("Couldnt set decimal value to temperature: {}", temp);
+            }
         }
 
         updateProperty("serialNumber", component.getSerialNumber().toString());

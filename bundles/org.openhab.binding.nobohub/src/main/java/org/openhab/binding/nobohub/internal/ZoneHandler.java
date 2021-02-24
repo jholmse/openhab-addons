@@ -60,9 +60,13 @@ public class ZoneHandler extends BaseThingHandler {
         updateState(CHANNEL_ZONE_ECO_TEMPERATURE, ecoTemperature);
 
         Double temp = zone.getTemperature();
-        if (temp != null) {
-            DecimalType currentTemperature = new DecimalType(temp);
-            updateState(CHANNEL_ZONE_CURRENT_TEMPERATURE, currentTemperature);
+        if (temp != null && temp != Double.NaN) {
+            try {
+                DecimalType currentTemperature = new DecimalType(temp);
+                updateState(CHANNEL_ZONE_CURRENT_TEMPERATURE, currentTemperature);
+            } catch (NumberFormatException nfe) {
+                logger.debug("Couldnt set decimal value to temperature: {}", temp);
+            }
         }
 
         int activeWeekProfileId = zone.getActiveWeekProfileId();
