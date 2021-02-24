@@ -40,6 +40,7 @@ import org.openhab.binding.nobohub.internal.model.Component;
 import org.openhab.binding.nobohub.internal.model.Hub;
 import org.openhab.binding.nobohub.internal.model.Override;
 import org.openhab.binding.nobohub.internal.model.OverrideMode;
+import org.openhab.binding.nobohub.internal.model.OverrideRegister;
 import org.openhab.binding.nobohub.internal.model.SerialNumber;
 import org.openhab.binding.nobohub.internal.model.Temperature;
 import org.openhab.binding.nobohub.internal.model.WeekProfile;
@@ -65,7 +66,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
     private @Nullable NoboThingDiscoveryService discoveryService;
     private @Nullable Hub hub;
 
-    private @NotNull Map<Integer, Override> overrideRegister = new HashMap<Integer, Override>();
+    private @NotNull OverrideRegister overrideRegister = new OverrideRegister();
     private @NotNull Map<Integer, WeekProfile> weekProfileRegister = new HashMap<Integer, WeekProfile>();
     private @NotNull Map<Integer, Zone> zoneRegister = new HashMap<Integer, Zone>();
     private @NotNull Map<SerialNumber, Component> componentRegister = new HashMap<SerialNumber, Component>();
@@ -286,7 +287,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             weekProfileRegister.put(weekProfile.getId(), weekProfile);
         } else if (line.startsWith("H04")) {
             Override override = Override.fromH04(line);
-            overrideRegister.put(override.getId(), override);
+            overrideRegister.put(override);
         } else if (line.startsWith("H05")) {
             Hub hub = Hub.fromH05(line);
             onUpdate(hub);
@@ -323,7 +324,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             weekProfileRegister.put(weekProfile.getId(), weekProfile);
         } else if (line.startsWith("B03")) {
             Override override = Override.fromH04(line);
-            overrideRegister.put(override.getId(), override);
+            overrideRegister.put(override);
         } else if (line.startsWith("V00")) {
             Zone zone = Zone.fromH01(line);
             zoneRegister.replace(zone.getId(), zone);

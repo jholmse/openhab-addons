@@ -50,8 +50,8 @@ public class ComponentHandler extends BaseThingHandler {
     public void onUpdate(Component component) {
         updateStatus(ThingStatus.ONLINE);
 
-        Double temp = component.getTemperature();
-        if (temp != null && temp != Double.NaN) {
+        double temp = component.getTemperature();
+        if (temp != Double.NaN) {
             try {
                 DecimalType currentTemperature = new DecimalType(temp);
                 updateState(CHANNEL_COMPONENT_CURRENT_TEMPERATURE, currentTemperature);
