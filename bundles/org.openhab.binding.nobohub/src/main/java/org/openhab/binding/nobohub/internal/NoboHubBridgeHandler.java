@@ -45,6 +45,7 @@ import org.openhab.binding.nobohub.internal.model.Temperature;
 import org.openhab.binding.nobohub.internal.model.WeekProfile;
 import org.openhab.binding.nobohub.internal.model.WeekProfileRegister;
 import org.openhab.binding.nobohub.internal.model.Zone;
+import org.openhab.binding.nobohub.internal.model.ZoneRegister;
 import org.openhab.binding.nobohub.internal.model.NoboCommunicationException;
 import org.openhab.binding.nobohub.internal.model.NoboDataException;
 import org.slf4j.Logger;
@@ -68,7 +69,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
 
     private @NotNull OverrideRegister overrideRegister = new OverrideRegister();
     private @NotNull WeekProfileRegister weekProfileRegister = new WeekProfileRegister();
-    private @NotNull Map<Integer, Zone> zoneRegister = new HashMap<Integer, Zone>();
+    private @NotNull ZoneRegister zoneRegister = new ZoneRegister();
     private @NotNull Map<SerialNumber, Component> componentRegister = new HashMap<SerialNumber, Component>();
 
     public NoboHubBridgeHandler(Bridge bridge) {
@@ -264,7 +265,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
 
         if (line.startsWith("H01")) {
             Zone zone = Zone.fromH01(line);
-            zoneRegister.put(zone.getId(), zone);
+            zoneRegister.put(zone);
             if (null != discoveryService)
             {
                 NoboThingDiscoveryService ds = Helpers.castToNonNull(discoveryService, "discoveryService");
@@ -301,7 +302,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             overrideRegister.remove(override.getId());
         } else if (line.startsWith("B00")) {
             Zone zone = Zone.fromH01(line);
-            zoneRegister.put(zone.getId(), zone);
+            zoneRegister.put(zone);
             if (null != discoveryService)
             {
                 NoboThingDiscoveryService ds = Helpers.castToNonNull(discoveryService, "discoveryService");
@@ -323,7 +324,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             overrideRegister.put(override);
         } else if (line.startsWith("V00")) {
             Zone zone = Zone.fromH01(line);
-            zoneRegister.replace(zone.getId(), zone);
+            zoneRegister.put(zone);
             refreshZone(zone);
         } else if (line.startsWith("V01")) {
             Component component = Component.fromH02(line);
