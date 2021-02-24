@@ -15,8 +15,6 @@ package org.openhab.binding.nobohub.internal;
 import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.*;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -36,6 +34,7 @@ import org.openhab.binding.nobohub.internal.connection.HubCommunicationThread;
 import org.openhab.binding.nobohub.internal.connection.HubConnection;
 import org.openhab.binding.nobohub.internal.discovery.NoboThingDiscoveryService;
 import org.openhab.binding.nobohub.internal.model.Component;
+import org.openhab.binding.nobohub.internal.model.ComponentRegister;
 import org.openhab.binding.nobohub.internal.model.Hub;
 import org.openhab.binding.nobohub.internal.model.Override;
 import org.openhab.binding.nobohub.internal.model.OverrideMode;
@@ -70,7 +69,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
     private @NotNull OverrideRegister overrideRegister = new OverrideRegister();
     private @NotNull WeekProfileRegister weekProfileRegister = new WeekProfileRegister();
     private @NotNull ZoneRegister zoneRegister = new ZoneRegister();
-    private @NotNull Map<SerialNumber, Component> componentRegister = new HashMap<SerialNumber, Component>();
+    private @NotNull ComponentRegister componentRegister = new ComponentRegister();
 
     public NoboHubBridgeHandler(Bridge bridge) {
         super(bridge);
@@ -273,7 +272,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             }
         } else if (line.startsWith("H02")) {
             Component component = Component.fromH02(line);
-            componentRegister.put(component.getSerialNumber(), component);
+            componentRegister.put(component);
             if (null != discoveryService)
             {
                 NoboThingDiscoveryService ds = Helpers.castToNonNull(discoveryService, "discoveryService");
@@ -310,7 +309,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             }
         } else if (line.startsWith("B01")) {
             Component component = Component.fromH02(line);
-            componentRegister.put(component.getSerialNumber(), component);
+            componentRegister.put(component);
             if (null != discoveryService)
             {
                 NoboThingDiscoveryService ds = Helpers.castToNonNull(discoveryService, "discoveryService");
@@ -328,7 +327,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             refreshZone(zone);
         } else if (line.startsWith("V01")) {
             Component component = Component.fromH02(line);
-            componentRegister.replace(component.getSerialNumber(), component);
+            componentRegister.put(component);
             refreshComponent(component);
         } else if (line.startsWith("V02")) {
             WeekProfile weekProfile = WeekProfile.fromH03(line);
