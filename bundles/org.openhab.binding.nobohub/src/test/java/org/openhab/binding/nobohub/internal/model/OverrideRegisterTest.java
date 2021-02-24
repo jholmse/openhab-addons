@@ -18,7 +18,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.Test;
 
 /**
- * Unit tests for Override model object.
+ * Unit tests for OverrideRegister model object.
  * 
  * @author Jørgen Austvik - Initial contribution
  */
@@ -53,14 +53,14 @@ public class OverrideRegisterTest {
     }
 
     @Test
-    public void testRemoveUnknown() throws NoboDataException {
+    public void testRemoveUnknown() {
         OverrideRegister sut = new OverrideRegister();
         Override res = sut.remove(666);
         assertEquals(null, res);
     }
 
     @Test
-    public void testGetUnknown() throws NoboDataException {
+    public void testGetUnknown() {
         OverrideRegister sut = new OverrideRegister();
         Override o = sut.get(666);
         assertEquals(null, o);

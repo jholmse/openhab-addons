@@ -17,7 +17,6 @@ import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.*;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -44,6 +43,7 @@ import org.openhab.binding.nobohub.internal.model.OverrideRegister;
 import org.openhab.binding.nobohub.internal.model.SerialNumber;
 import org.openhab.binding.nobohub.internal.model.Temperature;
 import org.openhab.binding.nobohub.internal.model.WeekProfile;
+import org.openhab.binding.nobohub.internal.model.WeekProfileRegister;
 import org.openhab.binding.nobohub.internal.model.Zone;
 import org.openhab.binding.nobohub.internal.model.NoboCommunicationException;
 import org.openhab.binding.nobohub.internal.model.NoboDataException;
@@ -67,7 +67,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
     private @Nullable Hub hub;
 
     private @NotNull OverrideRegister overrideRegister = new OverrideRegister();
-    private @NotNull Map<Integer, WeekProfile> weekProfileRegister = new HashMap<Integer, WeekProfile>();
+    private @NotNull WeekProfileRegister weekProfileRegister = new WeekProfileRegister();
     private @NotNull Map<Integer, Zone> zoneRegister = new HashMap<Integer, Zone>();
     private @NotNull Map<SerialNumber, Component> componentRegister = new HashMap<SerialNumber, Component>();
 
@@ -222,19 +222,15 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME, StringType.valueOf(o.getMode().name()));
         }
 
-
-        if(weekProfileRegister.size() > 0){
-            String mapOfWeekProfilesToString = weekProfileRegister.values()
-                    .stream()
-                    .map(weekProfile -> weekProfile.getId() + "=\"" + weekProfile.getName() + "\"")
-                    .collect(Collectors.joining(", "));
-            logger.info("Found profiles: {}", mapOfWeekProfilesToString);
+        if (!weekProfileRegister.isEmpty()){
+            String profiles = weekProfileRegister.getProfileMapString();
+            logger.info("Found profiles: {}", profiles);
 
             Bridge noboHub = getBridge();
             if (null != noboHub) {
                 NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
                 if (hubHandler != null) {
-                    updateState(NoboHubBindingConstants.CHANNEL_HUB_WEEK_PROFILES, StringType.valueOf(mapOfWeekProfilesToString));
+                    updateState(NoboHubBindingConstants.CHANNEL_HUB_WEEK_PROFILES, StringType.valueOf(profiles));
                 }
             }
         }
@@ -284,7 +280,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             }
         } else if (line.startsWith("H03")) {
             WeekProfile weekProfile = WeekProfile.fromH03(line);
-            weekProfileRegister.put(weekProfile.getId(), weekProfile);
+            weekProfileRegister.put(weekProfile);
         } else if (line.startsWith("H04")) {
             Override override = Override.fromH04(line);
             overrideRegister.put(override);
@@ -321,7 +317,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             }
         } else if (line.startsWith("B02")) {
             WeekProfile weekProfile = WeekProfile.fromH03(line);
-            weekProfileRegister.put(weekProfile.getId(), weekProfile);
+            weekProfileRegister.put(weekProfile);
         } else if (line.startsWith("B03")) {
             Override override = Override.fromH04(line);
             overrideRegister.put(override);
@@ -335,7 +331,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             refreshComponent(component);
         } else if (line.startsWith("V02")) {
             WeekProfile weekProfile = WeekProfile.fromH03(line);
-            weekProfileRegister.replace(weekProfile.getId(), weekProfile);
+            weekProfileRegister.put(weekProfile);
         } else if (line.startsWith("V03")) {
             Hub hub = Hub.fromH05(line);
             onUpdate(hub);
