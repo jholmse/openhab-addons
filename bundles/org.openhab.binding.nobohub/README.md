@@ -163,7 +163,7 @@ can be quite long, using the logs are recommended. Now map the id="Profile name"
 sitemap nobo label="Nobø " {
 
     Frame label="Main Bedroom"{
-      Selection item=MainBedroom_Zone_WeekProfil  mappings=[0=Default, 1="OFF", 2="On", 2="Eco", 3="Away", 
+      Selection item=MainBedroom_Zone_WeekProfile  mappings=[0="Default", 1="OFF", 2="On", 2="Eco", 3="Away", 
       4="Weekday 06->16", 5="Weekday 06->23", 6="Weekend 06->16", 7="Weekend 06->23", 8="Weekend 06->16", 
       9="Every day 06->16", 10="Every day 06->23"]    
     }
