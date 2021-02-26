@@ -12,9 +12,10 @@
  */
 package org.openhab.binding.nobohub.internal;
 
-import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.*;
+import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME;
 
 import java.time.Duration;
+import java.util.Collection;
 
 import javax.validation.constraints.NotNull;
 
@@ -36,6 +37,8 @@ import org.openhab.binding.nobohub.internal.discovery.NoboThingDiscoveryService;
 import org.openhab.binding.nobohub.internal.model.Component;
 import org.openhab.binding.nobohub.internal.model.ComponentRegister;
 import org.openhab.binding.nobohub.internal.model.Hub;
+import org.openhab.binding.nobohub.internal.model.NoboCommunicationException;
+import org.openhab.binding.nobohub.internal.model.NoboDataException;
 import org.openhab.binding.nobohub.internal.model.Override;
 import org.openhab.binding.nobohub.internal.model.OverrideMode;
 import org.openhab.binding.nobohub.internal.model.OverrideRegister;
@@ -45,8 +48,6 @@ import org.openhab.binding.nobohub.internal.model.WeekProfile;
 import org.openhab.binding.nobohub.internal.model.WeekProfileRegister;
 import org.openhab.binding.nobohub.internal.model.Zone;
 import org.openhab.binding.nobohub.internal.model.ZoneRegister;
-import org.openhab.binding.nobohub.internal.model.NoboCommunicationException;
-import org.openhab.binding.nobohub.internal.model.NoboDataException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
  * sent to one of the channels.
  *
  * @author Jørgen Austvik - Initial contribution
+ * @author Espen Fossen - Fixes
  */
 @NonNullByDefault
 public class NoboHubBridgeHandler extends BaseBridgeHandler {
@@ -220,19 +222,6 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
         if (null != activeOverride) {
             Override o = Helpers.castToNonNull(activeOverride, "activeOverride");
             updateState(NoboHubBindingConstants.CHANNEL_HUB_ACTIVE_OVERRIDE_NAME, StringType.valueOf(o.getMode().name()));
-        }
-
-        if (!weekProfileRegister.isEmpty()){
-            String profiles = weekProfileRegister.getProfileMapString();
-            logger.info("Found profiles: {}", profiles);
-
-            Bridge noboHub = getBridge();
-            if (null != noboHub) {
-                NoboHubBridgeHandler hubHandler = (NoboHubBridgeHandler) noboHub.getHandler();
-                if (hubHandler != null) {
-                    updateState(NoboHubBindingConstants.CHANNEL_HUB_WEEK_PROFILES, StringType.valueOf(profiles));
-                }
-            }
         }
 
         // Update all zones to set online status and update profile name from weekProfileRegister
@@ -427,5 +416,9 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
 
     public void setDicsoveryService(NoboThingDiscoveryService discoveryService) {
         this.discoveryService = discoveryService;
+    }
+
+    public Collection<WeekProfile> getWeekProfiles() {
+        return weekProfileRegister.values();
     }
 }

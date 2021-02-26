@@ -75,15 +75,4 @@ public class WeekProfileRegisterTest {
         assertEquals(false, sut.isEmpty());
     }
 
-    @Test
-    public void testProfileMapString() throws NoboDataException {
-        WeekProfile p1 = WeekProfile.fromH03("H03 1 Default 00000,06001,08000,15001,23000,00000,06001,08000,15001,23000,00000,06001,08000,15001,23000,00000,06001,08000,15001,23000,00000,06001,08000,15001,00000,07001,00000,07001,23000");
-        WeekProfile p2 = WeekProfile.fromH03("H03 2 HomeOffice 00000,06001,09000,15001,23000,00000,06001,08000,15001,23000,00000,06001,08000,15001,23000,00000,06001,08000,15001,23000,00000,06001,08000,15001,00000,07001,00000,07001,23000");
-        WeekProfileRegister sut = new WeekProfileRegister();
-        assertEquals("<no week profiles>", sut.getProfileMapString());
-        sut.put(p1);
-        sut.put(p2);
-        assertEquals("1=\"Default\", 2=\"HomeOffice\"", sut.getProfileMapString());
-    }
-
 }

@@ -51,9 +51,9 @@ hostName=10.0.0.10
 
 ### Hub
 
-| channel             | type   | description                      |
-|---------------------|--------|----------------------------------|
-| activeOverrideName  | String | The name of the active override  |
+| channel             | type   | description                                         |
+|---------------------|--------|-----------------------------------------------------|
+| activeOverrideName  | String | The name of the active override                     |
 
 ### Zone
 
@@ -92,14 +92,13 @@ Bridge nobohub:nobohub:controller "Nobø Hub" [ hostName="192.168.1.10", serialN
 ```
 // Hub
 String	Nobo_Hub_GlobalOverride         "Global Override %s"                <heating>       {channel="nobohub:nobohub:controller:activeOverrideName"}
-String	Nobo_Hub_WeekProfiles           "Week profiles %s"                  <calendar>      {channel="nobohub:nobohub:controller:weekProfiles"}
 
 // Panel Heater
 Number	PanelHeater_CurrentTemperatur   "Setpoint [%.1f °C]"                <temperature>   {channel="nobohub:component:controller:SERIAL_NUMBER_COMPONENT:currentTemperature"}
 
 // Zone
 String	Zone_ActiveWeekProfileName      "Active week profile name [%s]"     <calendar>      {channel="nobohub:zone:controller:1:activeWeekProfileName"}
-NUmber	Zone_ActiveWeekProfile          "Active week profile [%d]"          <calendar>      {channel="nobohub:zone:controller:1:activeWeekProfile"}
+Number	Zone_ActiveWeekProfile          "Active week profile [%d]"          <calendar>      {channel="nobohub:zone:controller:1:activeWeekProfile"}
 String	Zone_ActiveStatus               "Active status %s]"                 <heating>       {channel="nobohub:zone:controller:1:calculatedWeekProfileStatus"}
 Number	Zone_ComfortTemperatur          "Comfort temperature [%.1f °C]"     <temperature>   {channel="nobohub:zone:controller:1:comfortTemperature"}
 Number	Zone_EcoTemperatur              "Eco temperature [%.1f °C]"         <temperature>   {channel="nobohub:zone:controller:1:ecoTemperature"}
@@ -119,6 +118,7 @@ sitemap nobo label="Nobø " {
       Switch    item=Zone_ActiveStatus
       Text      item=Zone_ActiveWeekProfileName           
       Text      item=Zone_ActiveWeekProfile           
+      Selection item=Zone_ActiveWeekProfile           
       Setpoint  item=Zone_ComfortTemperatur minValue=7 maxValue=30 step=1 icon="temperature"
       Setpoint  item=Zone_EcoTemperatur     minValue=7 maxValue=30 step=1 icon="temperature"
       Text      item=Zone_CurrentTemperatur
@@ -130,7 +130,7 @@ sitemap nobo label="Nobø " {
 ## Organize your setup
 
 Nobø Hub uses a combination of status types (Normal, Comfort, Eco, Away), profiles types (Comfort, Eco, Away, Off), 
-temperatures types (Comfort, Eco, Away), zones and overrides settings to organize and enable different features. 
+predfined temperature types (Comfort, Eco, Away), zones and override settings to organize and enable different features. 
 This makes it possible to control the heaters in many different scenarios and combinations. The following is a suggested
 way of organizing the binding with the Hub for a good level of control and flexibility.
 
@@ -153,9 +153,8 @@ Start på creating the following profiles in the Nobø Hub App:
 Next set [Comfort|Eco] level for each zone to your requirements. For a more advanced setup, you can create a rule which 
 both sets temperature level and profile.
 
-Get list of profile id's and names either from the logs or adding item Nobo_Hub_WeekProfiles to a sitemap. As the string
-can be quite long, using the logs are recommended. Now map the id="Profile name" to a switch og selection like this
-
+Then create a sitemap with a Selection pointing to the Week Profile item. The binding will now automatically update all 
+available week profile options in the selection button:
 
 ### nobo.sitemap
 
@@ -163,9 +162,7 @@ can be quite long, using the logs are recommended. Now map the id="Profile name"
 sitemap nobo label="Nobø " {
 
     Frame label="Main Bedroom"{
-      Selection item=MainBedroom_Zone_WeekProfil  mappings=[0=Default, 1="OFF", 2="On", 2="Eco", 3="Away", 
-      4="Weekday 06->16", 5="Weekday 06->23", 6="Weekend 06->16", 7="Weekend 06->23", 8="Weekend 06->16", 
-      9="Every day 06->16", 10="Every day 06->23"]    
+      Selection item=MainBedroom_Zone_WeekProfile   
     }
 }
 ```
