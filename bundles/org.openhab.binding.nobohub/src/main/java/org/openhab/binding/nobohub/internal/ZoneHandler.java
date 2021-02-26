@@ -12,9 +12,16 @@
  */
 package org.openhab.binding.nobohub.internal;
 
-import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.*;
+import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.CHANNEL_ZONE_ACTIVE_WEEK_PROFILE;
+import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.CHANNEL_ZONE_ACTIVE_WEEK_PROFILE_NAME;
+import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.CHANNEL_ZONE_CALCULATED_WEEK_PROFILE_STATUS;
+import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.CHANNEL_ZONE_COMFORT_TEMPERATURE;
+import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.CHANNEL_ZONE_CURRENT_TEMPERATURE;
+import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.CHANNEL_ZONE_ECO_TEMPERATURE;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,6 +35,7 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
+import org.eclipse.smarthome.core.types.StateOption;
 import org.openhab.binding.nobohub.internal.model.NoboDataException;
 import org.openhab.binding.nobohub.internal.model.WeekProfile;
 import org.openhab.binding.nobohub.internal.model.WeekProfileStatus;
@@ -39,16 +47,20 @@ import org.slf4j.LoggerFactory;
  * Shows information about a named Zone in the Nobø Hub.
  *
  * @author Jørgen Austvik - Initial contribution
+ * @author Espen Fossen - Added support for week profile
  */
 @NonNullByDefault
 public class ZoneHandler extends BaseThingHandler {
 
     private final Logger logger = LoggerFactory.getLogger(ZoneHandler.class);
 
+    private final WeekProfileStateDescriptionOptionsProvider weekProfileStateDescriptionOptionsProvider;
+
     protected @Nullable Integer id;
 
-    public ZoneHandler(Thing thing) {
+    public ZoneHandler(Thing thing, WeekProfileStateDescriptionOptionsProvider weekProfileStateDescriptionOptionsProvider) {
         super(thing);
+        this.weekProfileStateDescriptionOptionsProvider = weekProfileStateDescriptionOptionsProvider;
     }
 
     public void onUpdate(Zone zone) {
@@ -81,6 +93,13 @@ public class ZoneHandler extends BaseThingHandler {
                         logger.error("Failed getting current week profile status", nde);
                     }
                 }
+
+                List<StateOption> options = new ArrayList<>();
+                logger.debug("Updating week profile state description options for zone {}.", zone.getName());
+                for (WeekProfile wp : hubHandler.getWeekProfiles()) {
+                    options.add(new StateOption(String.valueOf(wp.getId()), wp.getName()));
+                }
+                weekProfileStateDescriptionOptionsProvider.setStateOptions(new ChannelUID(getThing().getUID(), CHANNEL_ZONE_ACTIVE_WEEK_PROFILE), options);
             }
         }
 

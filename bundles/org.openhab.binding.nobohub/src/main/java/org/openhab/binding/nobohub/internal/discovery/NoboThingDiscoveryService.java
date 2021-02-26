@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
  * This class identifies devices that are available on the Nobø hub and adds discovery results for them.
  *
  * @author Jørgen Austvik - Initial contribution
+ * @author Espen Fossen - Fixes
  */
 @NonNullByDefault
 public class NoboThingDiscoveryService extends AbstractDiscoveryService {

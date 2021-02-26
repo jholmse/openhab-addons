@@ -30,6 +30,7 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
  * used across the whole binding.
  *
  * @author Jørgen Austvik - Initial contribution
+ * @author Espen Fossen - Added support for week profile
  */
 @NonNullByDefault
 public class NoboHubBindingConstants {
@@ -59,7 +60,6 @@ public class NoboHubBindingConstants {
 
     // Hub
     public static final String CHANNEL_HUB_ACTIVE_OVERRIDE_NAME = "activeOverrideName";
-    public static final String CHANNEL_HUB_WEEK_PROFILES = "weekProfiles";
 
     // Zone
     public static final String CHANNEL_ZONE_ACTIVE_WEEK_PROFILE_NAME = "activeWeekProfileName";

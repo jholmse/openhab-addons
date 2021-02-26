@@ -12,7 +12,10 @@
  */
 package org.openhab.binding.nobohub.internal;
 
-import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.*;
+import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.SUPPORTED_THING_TYPES_UIDS;
+import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.THING_TYPE_COMPONENT;
+import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.THING_TYPE_HUB;
+import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.THING_TYPE_ZONE;
 
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -31,6 +34,7 @@ import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openhab.binding.nobohub.internal.discovery.NoboThingDiscoveryService;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +43,7 @@ import org.slf4j.LoggerFactory;
  * handlers.
  *
  * @author Jørgen Austvik - Initial contribution
+ * @author Espen Fossen - Added support for week profile
  */
 @NonNullByDefault
 @Component(configurationPid = "binding.nobohub", service = ThingHandlerFactory.class)
@@ -46,6 +51,7 @@ public class NoboHubHandlerFactory extends BaseThingHandlerFactory {
 
     private final Logger logger = LoggerFactory.getLogger(NoboHubHandlerFactory.class);
     private final Map<ThingUID, ServiceRegistration<?>> discoveryServiceRegs = new HashMap<>();
+    private @NonNullByDefault({}) WeekProfileStateDescriptionOptionsProvider stateDescriptionOptionsProvider;
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -61,7 +67,7 @@ public class NoboHubHandlerFactory extends BaseThingHandlerFactory {
             registerDiscoveryService(handler);
             return handler;
         } else if (THING_TYPE_ZONE.equals(thingTypeUID)) {
-            return new ZoneHandler(thing);
+            return new ZoneHandler(thing, stateDescriptionOptionsProvider);
         } else if (THING_TYPE_COMPONENT.equals(thingTypeUID)) {
             return new ComponentHandler(thing);
         }
@@ -98,5 +104,14 @@ public class NoboHubHandlerFactory extends BaseThingHandlerFactory {
         } catch (IllegalArgumentException iae) {
             logger.error("Failed to unregister service", iae);
         }
+    }
+
+    @Reference
+    protected void setDynamicStateDescriptionProvider(WeekProfileStateDescriptionOptionsProvider provider) {
+        this.stateDescriptionOptionsProvider = provider;
+    }
+
+    protected void unsetDynamicStateDescriptionProvider(WeekProfileStateDescriptionOptionsProvider provider) {
+        this.stateDescriptionOptionsProvider = null;
     }
 }
