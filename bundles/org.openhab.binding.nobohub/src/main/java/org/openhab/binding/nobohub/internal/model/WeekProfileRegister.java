@@ -12,10 +12,9 @@
  */
 package org.openhab.binding.nobohub.internal.model;
 
-import java.util.Comparator;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -24,7 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Stores a mapping between week profile ids and week profiles that exists.
- * 
+ *
  * @author Jørgen Austvik - Initial contribution
  */
 @NonNullByDefault
@@ -34,16 +33,16 @@ public final class WeekProfileRegister {
 
     /**
      * Stores a new week profile in the register. If an week profile exists with the same id, that value is overwritten.
-     * 
+     *
      * @param profile The week profile to store.
      */
     public void put(WeekProfile profile) {
-        register.put(profile.getId(), profile);        
+        register.put(profile.getId(), profile);
     }
 
     /**
-     * Removes a WeekProfile from the registry. 
-     * 
+     * Removes a WeekProfile from the registry.
+     *
      * @param weekProfileId The week profile to remove
      * @return The week profile that is removed. Null if the week profile is not found.
      */
@@ -53,28 +52,25 @@ public final class WeekProfileRegister {
 
     /**
      * Returns a WeekProfile from the registry.
-     * 
+     *
      * @param weekProfileId The id of the week profile to return.
-     * @return Returns the week profile, or null if it doesnt exist in the regestry.
+     * @return Returns the week profile, or null if it doesnt exist in the registry.
      */
     public @Nullable WeekProfile get(int weekProfileId) {
-        return register.get(weekProfileId);     
+        return register.get(weekProfileId);
+    }
+
+    /**
+     * Returns all WeekProfiles from the registry.
+     *
+     * @return Returns the week profile, or empty list if no profiles.
+     */
+    public Collection<WeekProfile> values() {
+        return register.values();
     }
 
     public boolean isEmpty() {
         return register.isEmpty();
-    }
-
-    public String getProfileMapString() {
-        if (isEmpty()) {
-            return "<no week profiles>";
-        }
-
-        return register.values()
-            .stream()
-            .sorted(Comparator.comparingInt(WeekProfile::getId))
-            .map(weekProfile -> weekProfile.getId() + "=\"" + weekProfile.getName() + "\"")
-            .collect(Collectors.joining(", "));        
     }
 
 }
