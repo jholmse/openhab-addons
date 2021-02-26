@@ -37,14 +37,21 @@ import org.openhab.binding.nobohub.internal.connection.HubCommunicationThread;
 import org.openhab.binding.nobohub.internal.connection.HubConnection;
 import org.openhab.binding.nobohub.internal.discovery.NoboThingDiscoveryService;
 import org.openhab.binding.nobohub.internal.model.Component;
+import org.openhab.binding.nobohub.internal.model.ComponentRegister;
 import org.openhab.binding.nobohub.internal.model.Hub;
 import org.openhab.binding.nobohub.internal.model.NoboCommunicationException;
 import org.openhab.binding.nobohub.internal.model.NoboDataException;
 import org.openhab.binding.nobohub.internal.model.Override;
 import org.openhab.binding.nobohub.internal.model.OverrideMode;
+import org.openhab.binding.nobohub.internal.model.OverrideRegister;
 import org.openhab.binding.nobohub.internal.model.SerialNumber;
+import org.openhab.binding.nobohub.internal.model.Temperature;
 import org.openhab.binding.nobohub.internal.model.WeekProfile;
+import org.openhab.binding.nobohub.internal.model.WeekProfileRegister;
 import org.openhab.binding.nobohub.internal.model.Zone;
+import org.openhab.binding.nobohub.internal.model.ZoneRegister;
+import org.openhab.binding.nobohub.internal.model.NoboCommunicationException;
+import org.openhab.binding.nobohub.internal.model.NoboDataException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,10 +72,10 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
     private @Nullable NoboThingDiscoveryService discoveryService;
     private @Nullable Hub hub;
 
-    private @NotNull Map<Integer, Override> overrideRegister = new HashMap<Integer, Override>();
-    private @NotNull Map<Integer, WeekProfile> weekProfileRegister = new HashMap<Integer, WeekProfile>();
-    private @NotNull Map<Integer, Zone> zoneRegister = new HashMap<Integer, Zone>();
-    private @NotNull Map<SerialNumber, Component> componentRegister = new HashMap<SerialNumber, Component>();
+    private @NotNull OverrideRegister overrideRegister = new OverrideRegister();
+    private @NotNull WeekProfileRegister weekProfileRegister = new WeekProfileRegister();
+    private @NotNull ZoneRegister zoneRegister = new ZoneRegister();
+    private @NotNull ComponentRegister componentRegister = new ComponentRegister();
 
     public NoboHubBridgeHandler(Bridge bridge) {
         super(bridge);
@@ -250,7 +257,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
 
         if (line.startsWith("H01")) {
             Zone zone = Zone.fromH01(line);
-            zoneRegister.put(zone.getId(), zone);
+            zoneRegister.put(zone);
             if (null != discoveryService)
             {
                 NoboThingDiscoveryService ds = Helpers.castToNonNull(discoveryService, "discoveryService");
@@ -258,7 +265,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             }
         } else if (line.startsWith("H02")) {
             Component component = Component.fromH02(line);
-            componentRegister.put(component.getSerialNumber(), component);
+            componentRegister.put(component);
             if (null != discoveryService)
             {
                 NoboThingDiscoveryService ds = Helpers.castToNonNull(discoveryService, "discoveryService");
@@ -266,10 +273,10 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             }
         } else if (line.startsWith("H03")) {
             WeekProfile weekProfile = WeekProfile.fromH03(line);
-            weekProfileRegister.put(weekProfile.getId(), weekProfile);
+            weekProfileRegister.put(weekProfile);
         } else if (line.startsWith("H04")) {
             Override override = Override.fromH04(line);
-            overrideRegister.put(override.getId(), override);
+            overrideRegister.put(override);
         } else if (line.startsWith("H05")) {
             Hub hub = Hub.fromH05(line);
             onUpdate(hub);
@@ -287,7 +294,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             overrideRegister.remove(override.getId());
         } else if (line.startsWith("B00")) {
             Zone zone = Zone.fromH01(line);
-            zoneRegister.put(zone.getId(), zone);
+            zoneRegister.put(zone);
             if (null != discoveryService)
             {
                 NoboThingDiscoveryService ds = Helpers.castToNonNull(discoveryService, "discoveryService");
@@ -295,7 +302,7 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             }
         } else if (line.startsWith("B01")) {
             Component component = Component.fromH02(line);
-            componentRegister.put(component.getSerialNumber(), component);
+            componentRegister.put(component);
             if (null != discoveryService)
             {
                 NoboThingDiscoveryService ds = Helpers.castToNonNull(discoveryService, "discoveryService");
@@ -303,50 +310,40 @@ public class NoboHubBridgeHandler extends BaseBridgeHandler {
             }
         } else if (line.startsWith("B02")) {
             WeekProfile weekProfile = WeekProfile.fromH03(line);
-            weekProfileRegister.put(weekProfile.getId(), weekProfile);
+            weekProfileRegister.put(weekProfile);
         } else if (line.startsWith("B03")) {
             Override override = Override.fromH04(line);
-            overrideRegister.put(override.getId(), override);
+            overrideRegister.put(override);
         } else if (line.startsWith("V00")) {
             Zone zone = Zone.fromH01(line);
-            zoneRegister.replace(zone.getId(), zone);
+            zoneRegister.put(zone);
             refreshZone(zone);
         } else if (line.startsWith("V01")) {
             Component component = Component.fromH02(line);
-            componentRegister.replace(component.getSerialNumber(), component);
+            componentRegister.put(component);
             refreshComponent(component);
         } else if (line.startsWith("V02")) {
             WeekProfile weekProfile = WeekProfile.fromH03(line);
-            weekProfileRegister.replace(weekProfile.getId(), weekProfile);
+            weekProfileRegister.put(weekProfile);
         } else if (line.startsWith("V03")) {
             Hub hub = Hub.fromH05(line);
             onUpdate(hub);
         } else if (line.startsWith("Y02")) {
-            String parts[] = line.split(" ", 3);
-            SerialNumber serialNumber = new SerialNumber(parts[1]);
-            try {
-                if (parts[2] == null) {
-                    throw new NoboDataException("Missing temperature data");
-                }
-
-                double temp = Double.parseDouble(parts[2]);
-                Component component = getComponent(serialNumber);
-                if (null != component) {
-                    Component c = Helpers.castToNonNull(component, "component");
-                    c.setTemperature(temp);
-                    refreshComponent(c);
-                    int zoneId = c.getTemperatureSensorForZoneId();
-                    if (zoneId >= 0) {
-                        Zone zone = getZone(zoneId);
-                        if (null != zone) {
-                            Zone z = Helpers.castToNonNull(zone, "zone");
-                            z.setTemperature(temp);
-                            refreshZone(z);
-                        }
+            Temperature temp = Temperature.fromY02(line);
+            Component component = getComponent(temp.getSerialNumber());
+            if (null != component) {
+                Component c = Helpers.castToNonNull(component, "component");
+                c.setTemperature(temp.getTemperature());
+                refreshComponent(c);
+                int zoneId = c.getTemperatureSensorForZoneId();
+                if (zoneId >= 0) {
+                    Zone zone = getZone(zoneId);
+                    if (null != zone) {
+                        Zone z = Helpers.castToNonNull(zone, "zone");
+                        z.setTemperature(temp.getTemperature());
+                        refreshZone(z);
                     }
                 }
-            } catch (NumberFormatException nfe) {
-                throw new NoboDataException(String.format("Failed to parse temperature %s: %s", parts[2], nfe.getMessage()), nfe);
             }
         } else if (line.startsWith("E00")) {
             logger.error("Error from Hub: {}", line);

@@ -10,6 +10,7 @@ global mode of the hub.
 This binding is tested with the following devices:
 
 * Thermostats for different electrical panel heaters
+* Thermostats for heating in floors
 * Nobø Switch SW 4
 
 TODO:
