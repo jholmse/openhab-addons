@@ -16,8 +16,6 @@ import static org.openhab.binding.nobohub.internal.NoboHubBindingConstants.CHANN
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -50,8 +48,6 @@ import org.openhab.binding.nobohub.internal.model.WeekProfile;
 import org.openhab.binding.nobohub.internal.model.WeekProfileRegister;
 import org.openhab.binding.nobohub.internal.model.Zone;
 import org.openhab.binding.nobohub.internal.model.ZoneRegister;
-import org.openhab.binding.nobohub.internal.model.NoboCommunicationException;
-import org.openhab.binding.nobohub.internal.model.NoboDataException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
